@@ -1,4 +1,4 @@
-use node_libra_runtime::{
+use node_p2p_payment_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };

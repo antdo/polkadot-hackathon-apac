@@ -1,5 +1,5 @@
 [package]
-name = 'node-libra-runtime'
+name = 'node-p2p_payment-runtime'
 version = '3.0.0-monthly-2021-10'
 description = 'A fresh FRAME-based Substrate runtime, ready for hacking.'
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
@@ -12,9 +12,9 @@ repository = 'https://github.com/substrate-developer-hub/substrate-node-template
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
 
-[dependencies.pallet-libra]
+[dependencies.pallet-p2p_payment]
 default-features = false
-path = '../pallets/libra'
+path = '../pallets/p2p_payment'
 version = '3.0.0-monthly-2021-10'
 
 [build-dependencies.substrate-wasm-builder]
@@ -198,7 +198,7 @@ runtime-benchmarks = [
     'frame-system/runtime-benchmarks',
     'hex-literal',
     'pallet-balances/runtime-benchmarks',
-    'pallet-libra/runtime-benchmarks',
+    'pallet-p2p_payment/runtime-benchmarks',
     'pallet-timestamp/runtime-benchmarks',
     'sp-runtime/runtime-benchmarks',
 ]
@@ -214,7 +214,7 @@ std = [
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
-    'pallet-libra/std',
+    'pallet-p2p_payment/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
     'pallet-transaction-payment/std',

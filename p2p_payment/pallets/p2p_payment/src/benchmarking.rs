@@ -1,4 +1,4 @@
-//! Benchmarking setup for pallet-libra
+//! Benchmarking setup for pallet-p2p_payment
 
 use super::*;
 

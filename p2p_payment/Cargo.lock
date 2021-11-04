@@ -3502,13 +3502,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-libra"
+name = "node-p2p_payment"
 version = "3.0.0-monthly-2021-10"
 dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "jsonrpc-core",
- "node-libra-runtime",
+ "node-p2p_payment-runtime",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
  "sc-cli",
@@ -3539,7 +3539,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-libra-runtime"
+name = "node-p2p_payment-runtime"
 version = "3.0.0-monthly-2021-10"
 dependencies = [
  "frame-benchmarking",
@@ -3552,7 +3552,7 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
- "pallet-libra",
+ "pallet-p2p_payment",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-timestamp",
@@ -3794,7 +3794,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-libra"
+name = "pallet-p2p_payment"
 version = "3.0.0-monthly-2021-10"
 dependencies = [
  "frame-benchmarking",
@@ -3805,6 +3805,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "uuid",
 ]
 
 [[package]]
@@ -7373,6 +7374,16 @@ dependencies = [
  "idna 0.2.3",
  "matches",
  "percent-encoding 2.1.0",
+]
+
+[[package]]
+name = "uuid"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
+dependencies = [
+ "getrandom 0.2.3",
+ "serde",
 ]
 
 [[package]]
