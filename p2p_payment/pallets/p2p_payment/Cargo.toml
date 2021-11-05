@@ -47,6 +47,10 @@ default-features = false
 features = ["serde", "v4"]
 version = "0.8"
 
+[dependencies.serde]
+default-features = false
+version = '1.0.119'
+
 [dev-dependencies.sp-core]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'

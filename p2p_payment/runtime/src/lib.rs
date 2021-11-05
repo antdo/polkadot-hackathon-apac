@@ -275,6 +275,7 @@ impl pallet_sudo::Config for Runtime {
 /// Configure the pallet-p2p_payment in pallets/p2p_payment.
 impl pallet_p2p_payment::Config for Runtime {
 	type Event = Event;
+	type Currency = Balances;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
