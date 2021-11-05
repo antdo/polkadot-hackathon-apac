@@ -9,6 +9,7 @@ pub mod pallet {
         pallet_prelude::*,
         sp_runtime::traits::{Hash, Zero},
         traits::{Currency, ExistenceRequirement, Randomness},
+        transactional,
     };
     use frame_system::pallet_prelude::*;
     use scale_info::TypeInfo;
@@ -72,7 +73,8 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
-        // TODO Part III
+        PaymentNotExist,
+        NotEnoughBalance,
     }
 
     #[pallet::event]
@@ -130,22 +132,37 @@ pub mod pallet {
             Ok(())
         }
 
+        #[transactional]
         #[pallet::weight(100)]
         pub fn deposit_payment(origin: OriginFor<T>, payment_id: String) -> DispatchResult {
-            let sender = ensure_signed(origin)?;
+            let payer = ensure_signed(origin)?;
 
-            Self::deposit_event(Event::PaymentDeposited(sender, payment_id));
+            let payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
+
+            let amount = payment.amount.clone();
+
+            ensure!(T::Currency::free_balance(&payer) >= amount, <Error<T>>::NotEnoughBalance);
+
+            let payee = payment.payee.clone();
+
+            T::Currency::transfer(&payer, &payee, amount, ExistenceRequirement::KeepAlive)?;
+
+            Self::deposit_event(Event::PaymentDeposited(payer, payment_id));
             Ok(())
         }
 
         #[pallet::weight(100)]
         pub fn complete_payment(origin: OriginFor<T>, payment_id: String) -> DispatchResult {
+            let sender = ensure_signed(origin)?;
+
             Self::deposit_event(Event::PaymentCompleted(sender, payment_id));
             Ok(())
         }
 
         #[pallet::weight(100)]
         pub fn dispute_payment(origin: OriginFor<T>, payment_id: String) -> DispatchResult {
+            let sender = ensure_signed(origin)?;
+
             Self::deposit_event(Event::PaymentDisputed(sender, payment_id));
             Ok(())
         }
