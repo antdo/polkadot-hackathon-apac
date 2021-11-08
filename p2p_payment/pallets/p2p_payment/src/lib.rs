@@ -5,10 +5,9 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::{
-        dispatch::{DispatchResult, DispatchResultWithPostInfo},
+        dispatch::{DispatchResult},
         pallet_prelude::*,
-        sp_runtime::traits::{Hash, Zero},
-        traits::{Currency, ExistenceRequirement, Randomness},
+        traits::{ Currency, LockIdentifier, LockableCurrency, ExistenceRequirement, WithdrawReasons },
         transactional,
     };
     use frame_system::pallet_prelude::*;
@@ -41,6 +40,7 @@ pub mod pallet {
         pub payer: AccountOf<T>,
         pub payee: AccountOf<T>,
         pub status: PaymentStatus,
+        pub fund_lock_id: LockIdentifier,
     }
 
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
@@ -68,7 +68,7 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        type Currency: Currency<Self::AccountId>;
+        type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
     }
 
     #[pallet::error]
@@ -111,7 +111,7 @@ pub mod pallet {
             amount: BalanceOf<T>,
             payer: AccountOf<T>,
         ) -> DispatchResult {
-            let sender = ensure_signed(origin)?;
+            let owner = ensure_signed(origin)?;
 
             let id = Uuid::new_v4().to_string();
 
@@ -121,14 +121,15 @@ pub mod pallet {
                 description,
                 amount,
                 payer,
-                payee: sender.clone(),
+                payee: owner.clone(),
                 status: PaymentStatus::New,
+                fund_lock_id: *b"lockerid",
             };
 
-            <PaymentsOwned<T>>::mutate(&sender, |payments_vec| payments_vec.push(id.clone()));
+            <PaymentsOwned<T>>::mutate(&owner, |payments_vec| payments_vec.push(id.clone()));
             <Payments<T>>::insert(&id, payment);
 
-            Self::deposit_event(Event::PaymentCreated(sender, id));
+            Self::deposit_event(Event::PaymentCreated(owner, id));
             Ok(())
         }
 
@@ -143,9 +144,12 @@ pub mod pallet {
 
             ensure!(T::Currency::free_balance(&payer) >= amount, <Error<T>>::NotEnoughBalance);
 
-            let payee = payment.payee.clone();
-
-            T::Currency::transfer(&payer, &payee, amount, ExistenceRequirement::KeepAlive)?;
+            T::Currency::set_lock(
+                payment.fund_lock_id.clone(),
+                &payer,
+                amount,
+                WithdrawReasons::all(),
+            );
 
             Self::deposit_event(Event::PaymentDeposited(payer, payment_id));
             Ok(())
@@ -153,17 +157,29 @@ pub mod pallet {
 
         #[pallet::weight(100)]
         pub fn complete_payment(origin: OriginFor<T>, payment_id: String) -> DispatchResult {
-            let sender = ensure_signed(origin)?;
+            let payer = ensure_signed(origin)?;
 
-            Self::deposit_event(Event::PaymentCompleted(sender, payment_id));
+            let payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
+
+            let amount = payment.amount.clone();
+            let payee = payment.payee.clone();
+
+            T::Currency::remove_lock(
+                payment.fund_lock_id.clone(),
+                &payer,
+            );
+
+            T::Currency::transfer(&payer, &payee, amount, ExistenceRequirement::KeepAlive)?;
+
+            Self::deposit_event(Event::PaymentCompleted(payer, payment_id));
             Ok(())
         }
 
         #[pallet::weight(100)]
         pub fn dispute_payment(origin: OriginFor<T>, payment_id: String) -> DispatchResult {
-            let sender = ensure_signed(origin)?;
+            let payer = ensure_signed(origin)?;
 
-            Self::deposit_event(Event::PaymentDisputed(sender, payment_id));
+            Self::deposit_event(Event::PaymentDisputed(payer, payment_id));
             Ok(())
         }
 
