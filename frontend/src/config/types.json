@@ -1,1 +1,13 @@
-{}
+{
+  "PaymentStatus": {
+    "_enum": ["WaitingForDeposit", "Deposited", "Completed", "Disputed"]
+  },
+  "Payment": {
+    "order": "u128",
+    "title": "Bytes",
+    "amount": "Balance",
+    "description": "Bytes",
+    "payer": "Account",
+    "payee": "Account"
+  }
+}
