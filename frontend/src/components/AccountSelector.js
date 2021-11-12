@@ -15,7 +15,6 @@ export default function AccountSelector(props) {
   const [selectedAccount, setSelectedAccount] = useState({});
   const { onAccountSelected } = props;
 
-  console.log('Keyring:', keyring);
   const keyringOptions = keyring.getPairs().map(account => ({
     address: account.address,
     name: account.meta.name.toUpperCase(),
@@ -39,7 +38,7 @@ export default function AccountSelector(props) {
         content={
           <Menu>
             {keyringOptions.map(account => (
-              <Menu.Item onClick={() => selectAccount(account)}>
+              <Menu.Item key={account.address} onClick={() => selectAccount(account)}>
                 {account.name}
               </Menu.Item>
             ))}

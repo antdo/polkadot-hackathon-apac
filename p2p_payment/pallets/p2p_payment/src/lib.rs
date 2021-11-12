@@ -42,7 +42,7 @@ pub mod pallet {
         pub name: Vec<u8>,
         pub description: Vec<u8>,
         pub amount: BalanceOf<T>,
-        pub payer: AccountOf<T>,
+        pub payer: Option<AccountOf<T>>,
         pub payee: AccountOf<T>,
         pub status: PaymentStatus,
         pub fund_lock_id: LockIdentifier,
@@ -135,7 +135,7 @@ pub mod pallet {
             name: Vec<u8>,
             description: Vec<u8>,
             amount: BalanceOf<T>,
-            payer: AccountOf<T>,
+            payer: Option<AccountOf<T>>,
         ) -> DispatchResult {
             let owner = ensure_signed(origin)?;
 
@@ -150,7 +150,7 @@ pub mod pallet {
                 amount,
                 payer,
                 payee: owner.clone(),
-                status: PaymentStatus::New,
+                status: PaymentStatus::WaitingForDeposit,
                 fund_lock_id: *b"lockerid",
             };
 

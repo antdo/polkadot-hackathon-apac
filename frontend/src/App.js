@@ -11,7 +11,6 @@ import { useSubstrate } from './substrate-lib';
 import routes from './routes';
 
 const matchedRoute = path => {
-  console.log('CurrentPath', path);
   return routes.find(item => item.path === path);
 };
 
@@ -55,7 +54,7 @@ export default function App() {
           width="calc(100% - 240px)"
           paddingX="48px"
           paddingY="16px"
-          elevation="1"
+          elevation={1}
           display="flex"
           justifyContent="space-between"
           alignItems="center"
@@ -70,7 +69,7 @@ export default function App() {
         <Pane marginTop="80px">
           <Switch>
             {routes.map(route => (
-              <Route path={route.path} exact={route.exact}>
+              <Route key={route.path} path={route.path} exact={route.exact}>
                 <route.component accountPair={accountPair}></route.component>
               </Route>
             ))}

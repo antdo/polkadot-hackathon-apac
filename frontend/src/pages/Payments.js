@@ -1,57 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Pane,
-  Tablist,
-  Tab,
-  Heading,
-  Button,
-  Dialog,
-  TextareaField,
-  TextInputField,
-  SelectMenu,
-  Label,
-} from 'evergreen-ui';
+import { Pane, Tablist, Tab, Dialog, Button } from 'evergreen-ui';
 import PaymentsTable from '../components/PaymentsTable';
+import PaymentForm from '../components/PaymentForm';
+
+import PaymentModel from '../utils/models/Payment';
+
 import { useSubstrate } from '../substrate-lib';
 
 const tabs = ['All', 'Incomplete', 'Completed', 'Disputed', 'Cancelled'];
-
-const suportedCurrencies = [
-  {
-    label: 'Libra',
-    value: 'libra',
-  },
-  {
-    label: 'Libra USD',
-    value: 'lusd',
-  },
-  {
-    label: 'Dai',
-    value: 'dai',
-  },
-  {
-    label: 'Bitcoin',
-    value: 'btc',
-  },
-  {
-    label: 'Ethereum',
-    value: 'eth',
-  },
-];
-
-const paymentModel = (
-  hash,
-  { title, amount, description, payer, payee, createdAtHash, status}
-) => ({
-  id: hash,
-  name: title.toHuman(),
-  amount: amount.toHuman(),
-  description: description.toHuman(),
-  payer: payer.toJSON(),
-  payee: payee.toJSON(),
-  updatedAt: createdAtHash.toHuman(),
-  status: status.toHuman(),
-});
 
 export default function Payments(props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -87,10 +43,8 @@ export default function Payments(props) {
 
     const asyncFetch = async () => {
       unsub = await api.query.p2PPayment.payments.multi(paymentIds, items => {
-        console.log('Payments:', items);
         const paymentArr = items.map((payment, index) => {
-          console.log(payment.value);
-          return paymentModel(paymentIds[index], payment.value);
+          return PaymentModel(paymentIds[index], payment.value);
         });
         setPayments(paymentArr);
       });
@@ -105,17 +59,6 @@ export default function Payments(props) {
 
   useEffect(subscribePaymentsOwned, [accountPair]);
   useEffect(subscribePayments, [paymentIds]);
-
-  const [paymentForm, setPaymentForm] = useState({
-    name: '',
-    amount: '',
-    currency: {
-      label: 'Libra',
-      value: 'libra',
-    },
-    payer: '',
-    description: '',
-  });
 
   return (
     <Pane>
@@ -141,65 +84,18 @@ export default function Payments(props) {
           ))}
         </Tablist>
         <Pane background="tint1" flex="1">
-          <PaymentsTable payments={payments}></PaymentsTable>
+          <PaymentsTable height={window.innerHeight - 164} payments={payments}></PaymentsTable>
         </Pane>
       </Pane>
 
       <Dialog
         isShown={hasCreateForm}
         title="Create Payment"
+        hasFooter={false}
         onCloseComplete={() => setHasCreateForm(false)}
+        shouldCloseOnOverlayClick={false}
       >
-        <Pane>
-          <TextInputField
-            label="Payment name:"
-            placeholder="Payment name"
-            value={paymentForm.name}
-            required
-          />
-          <Pane display="flex" alignItems="flex-end">
-            <TextInputField
-              flex={1}
-              value={paymentForm.amount}
-              label="Payment amount:"
-              placeholder="Payment name"
-              required
-            />
-            <Pane
-              display="flex"
-              flexDirection="column"
-              marginLeft="8px"
-              marginBottom="24px"
-              width="80px"
-            >
-              <Label marginBottom="8px">Currency:</Label>
-              <SelectMenu
-                title="Select name"
-                options={suportedCurrencies}
-                selected={paymentForm.currency}
-                hasFilter={false}
-                hasTitle={false}
-                onSelect={item =>
-                  setPaymentForm({ ...paymentForm, currency: item })
-                }
-              >
-                <Button>{paymentForm.currency.label}</Button>
-              </SelectMenu>
-            </Pane>
-          </Pane>
-          <TextInputField
-            label="Payer address"
-            value={paymentForm.payer}
-            hint="You can specific the address of payer. If not, please leave it empty."
-            placeholder="Payment name"
-          />
-          <TextareaField
-            value={paymentForm.description}
-            label="Payment description:"
-            description="Please describe about the payment detail such as purpose"
-            required
-          />
-        </Pane>
+        <PaymentForm accountPair={accountPair} onFormClosed={() => { setHasCreateForm(false) }} />
       </Dialog>
     </Pane>
   );

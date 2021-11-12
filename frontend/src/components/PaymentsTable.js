@@ -2,11 +2,11 @@ import React from 'react';
 import { Pane, Table } from 'evergreen-ui';
 
 export default function PaymentsTable(props) {
-  const { payments } = props;
+  const { payments, height } = props;
 
   return (
     <Pane>
-      <Table>
+      <Table height={height}>
         <Table.Head>
           <Table.SearchHeaderCell />
           <Table.TextHeaderCell>Amount</Table.TextHeaderCell>
