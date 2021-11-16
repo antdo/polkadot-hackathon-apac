@@ -7,7 +7,7 @@ import PaymentModel from '../utils/models/Payment';
 
 import { useSubstrate } from '../substrate-lib';
 
-const tabs = ['All', 'Incomplete', 'Completed', 'Disputed', 'Cancelled'];
+const tabs = ['All', 'WaitingForDeposit', 'Completed', 'Disputed', 'Cancelled'];
 
 export default function Payments(props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -32,10 +32,11 @@ export default function Payments(props) {
 
     if (accountPair) {
       asyncFetch();
-      return () => {
-        unsub && unsub();
-      };
     }
+
+    return () => {
+      unsub && unsub();
+    };
   };
 
   const subscribePayments = () => {
@@ -59,6 +60,14 @@ export default function Payments(props) {
 
   useEffect(subscribePaymentsOwned, [accountPair]);
   useEffect(subscribePayments, [paymentIds]);
+
+  const renderedPayments = () => {
+    if (selectedIndex === 0) {
+      return payments;
+    }
+
+    return payments.filter(payment => payment.status === tabs[selectedIndex]);
+  };
 
   return (
     <Pane>
@@ -84,7 +93,10 @@ export default function Payments(props) {
           ))}
         </Tablist>
         <Pane background="tint1" flex="1">
-          <PaymentsTable height={window.innerHeight - 164} payments={payments}></PaymentsTable>
+          <PaymentsTable
+            height={window.innerHeight - 164}
+            payments={renderedPayments()}
+          ></PaymentsTable>
         </Pane>
       </Pane>
 
@@ -95,7 +107,12 @@ export default function Payments(props) {
         onCloseComplete={() => setHasCreateForm(false)}
         shouldCloseOnOverlayClick={false}
       >
-        <PaymentForm accountPair={accountPair} onFormClosed={() => { setHasCreateForm(false) }} />
+        <PaymentForm
+          accountPair={accountPair}
+          onFormClosed={() => {
+            setHasCreateForm(false);
+          }}
+        />
       </Dialog>
     </Pane>
   );

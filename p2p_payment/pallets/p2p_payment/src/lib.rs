@@ -32,6 +32,7 @@ pub mod pallet {
         WaitingForDeposit,
         Deposited,
         Completed,
+        Cancelled,
         Disputed,
     }
 
@@ -81,6 +82,7 @@ pub mod pallet {
         PaymentNotExist,
         PaymentsCountOverflow,
         NotEnoughBalance,
+        AccessDenied,
     }
 
     #[pallet::event]
@@ -90,6 +92,7 @@ pub mod pallet {
         PaymentDeposited(T::AccountId, T::Hash),
         PaymentCompleted(T::AccountId, T::Hash),
         PaymentDisputed(T::AccountId, T::Hash),
+        PaymentCancelled(T::AccountId, T::Hash),
     }
 
     #[pallet::storage]
@@ -169,7 +172,7 @@ pub mod pallet {
         pub fn deposit_payment(origin: OriginFor<T>, payment_id: T::Hash) -> DispatchResult {
             let payer = ensure_signed(origin)?;
 
-            let payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
+            let mut payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
 
             let amount = payment.amount.clone();
 
@@ -185,6 +188,11 @@ pub mod pallet {
                 WithdrawReasons::all(),
             );
 
+            payment.status = PaymentStatus::Deposited;
+            payment.payer = Some(payer.clone());
+
+            <Payments<T>>::insert(&payment_id, payment);
+
             Self::deposit_event(Event::PaymentDeposited(payer, payment_id));
             Ok(())
         }
@@ -193,7 +201,12 @@ pub mod pallet {
         pub fn complete_payment(origin: OriginFor<T>, payment_id: T::Hash) -> DispatchResult {
             let payer = ensure_signed(origin)?;
 
-            let payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
+            let mut payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
+
+            match payment.payer.clone() {
+                Some(p) => ensure!(payer == p, <Error<T>>::AccessDenied),
+                None => (),
+            }
 
             let amount = payment.amount.clone();
             let payee = payment.payee.clone();
@@ -202,7 +215,34 @@ pub mod pallet {
 
             T::Currency::transfer(&payer, &payee, amount, ExistenceRequirement::KeepAlive)?;
 
+            payment.status = PaymentStatus::Completed;
+
+            <Payments<T>>::insert(&payment_id, payment);
+
             Self::deposit_event(Event::PaymentCompleted(payer, payment_id));
+            Ok(())
+        }
+
+        #[pallet::weight(100)]
+        pub fn cancel_payment(origin: OriginFor<T>, payment_id: T::Hash) -> DispatchResult {
+            let sender = ensure_signed(origin)?;
+
+            let mut payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
+
+            ensure!(sender == payment.payee, <Error<T>>::AccessDenied);
+
+            if payment.status == PaymentStatus::Deposited {
+                let payer = payment.payer.clone();
+                match payer {
+                    None => (),
+                    Some(p) => T::Currency::remove_lock(payment.fund_lock_id.clone(), &p),
+                }
+            }
+
+            payment.status = PaymentStatus::Cancelled;
+            <Payments<T>>::insert(&payment_id, payment);
+
+            Self::deposit_event(Event::PaymentCancelled(sender, payment_id));
             Ok(())
         }
 

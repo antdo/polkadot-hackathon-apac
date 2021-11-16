@@ -58,6 +58,8 @@ export default function App() {
           display="flex"
           justifyContent="space-between"
           alignItems="center"
+          background="white"
+          zIndex="2"
         >
           <Heading size={800}>
             {(matchedRoute(location.pathname) || {}).name}
@@ -66,7 +68,7 @@ export default function App() {
             onAccountSelected={account => setAccountAddress(account.address)}
           />
         </Pane>
-        <Pane marginTop="80px">
+        <Pane width='100%' marginTop="80px">
           <Switch>
             {routes.map(route => (
               <Route key={route.path} path={route.path} exact={route.exact}>

@@ -1,6 +1,6 @@
 const Payment = (id, data) => ({
   id,
-  name: data.title.toHuman(),
+  name: data.name.toHuman(),
   amount: data.amount.toHuman(),
   description: data.description.toHuman(),
   payer: data.payer.toJSON(),

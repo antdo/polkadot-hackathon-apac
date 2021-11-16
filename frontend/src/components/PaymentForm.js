@@ -8,52 +8,31 @@ import {
   SelectMenu,
   toaster,
 } from 'evergreen-ui';
-import { web3FromSource } from '@polkadot/extension-dapp';
 
 import suportedCurrencies from '../utils/supportedCurrencies';
-// import transformParams from '../utils/transformParams';
+import { getFromAcct } from '../utils/tx';
 
 import { useSubstrate } from '../substrate-lib';
 
-const txParamFields = [
-  {
-    name: 'name',
-    type: 'string',
-  },
-  {
-    name: 'description',
-    type: 'string',
-  },
-  {
-    name: 'amount',
-    type: 'Balance',
-  },
-  {
-    name: 'payer',
-    type: 'Account',
-    optional: true,
-  },
-];
-
-const getFromAcct = async accountPair => {
-  const {
-    address,
-    meta: { source, isInjected },
-  } = accountPair;
-
-  if (isInjected) {
-    const injected = await web3FromSource(source);
-
-    return {
-      fromAcct: address,
-      signer: injected.signer,
-    };
-  }
-
-  return {
-    fromAcct: accountPair,
-  };
-};
+// const txParamFields = [
+//   {
+//     name: 'name',
+//     type: 'string',
+//   },
+//   {
+//     name: 'description',
+//     type: 'string',
+//   },
+//   {
+//     name: 'amount',
+//     type: 'Balance',
+//   },
+//   {
+//     name: 'payer',
+//     type: 'Account',
+//     optional: true,
+//   },
+// ];
 
 export default function PaymentForm(props) {
   const { accountPair, onFormClosed } = props;
@@ -116,7 +95,7 @@ export default function PaymentForm(props) {
   };
 
   const discardForm = () => {
-    if (onFormDiscarded) {
+    if (onFormClosed) {
       onFormClosed();
     }
   };

@@ -1,11 +1,8 @@
 import React from 'react';
-import {
-  Container,
-  Grid,
-} from 'semantic-ui-react';
+import { Container, Grid } from 'semantic-ui-react';
 import 'semantic-ui-css/semantic.min.css';
 
-import { SubstrateContextProvider } from '../substrate-lib';
+import { useSubstrate } from '../substrate-lib';
 import { DeveloperConsole } from '../substrate-lib/components';
 
 import Balances from '../components/Balances';
@@ -18,8 +15,14 @@ import TemplateModule from '../components/TemplateModule';
 import Transfer from '../components/Transfer';
 import Upgrade from '../components/Upgrade';
 
-function Main(props) {
+export default function ChainState(props) {
   const { accountPair } = props;
+
+  const { api } = useSubstrate();
+
+  if (!api) {
+    return null;
+  }
 
   return (
     <div>
@@ -49,13 +52,5 @@ function Main(props) {
       </Container>
       <DeveloperConsole />
     </div>
-  );
-}
-
-export default function ChainState(props) {
-  return (
-    <SubstrateContextProvider>
-      <Main {...props} />
-    </SubstrateContextProvider>
   );
 }
