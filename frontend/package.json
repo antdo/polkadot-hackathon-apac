@@ -24,6 +24,7 @@
     "@polkadot/ui-settings": "^0.85.4",
     "@polkadot/util": "^7.4.1",
     "@polkadot/util-crypto": "^7.4.1",
+    "clipboard": "^2.0.8",
     "eslint-config-react-app": "^6.0.0",
     "evergreen-ui": "^6.5.2",
     "prop-types": "^15.7.2",

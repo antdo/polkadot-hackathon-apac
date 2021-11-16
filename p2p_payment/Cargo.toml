@@ -4,6 +4,6 @@ panic = 'unwind'
 [workspace]
 members = [
     'node',
-    'pallets/libra',
+    'pallets/p2p_payment',
     'runtime',
 ]

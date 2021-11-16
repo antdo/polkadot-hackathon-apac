@@ -1856,8 +1856,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcd999463524c52659517fe2cea98493cfe485d10565e7b0fb07dbba7ad2753"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
  "libc",
  "wasi 0.10.0+wasi-snapshot-preview1",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -3502,13 +3504,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-libra"
+name = "node-p2p_payment"
 version = "3.0.0-monthly-2021-10"
 dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "jsonrpc-core",
- "node-libra-runtime",
+ "node-p2p_payment-runtime",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
  "sc-cli",
@@ -3539,7 +3541,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-libra-runtime"
+name = "node-p2p_payment-runtime"
 version = "3.0.0-monthly-2021-10"
 dependencies = [
  "frame-benchmarking",
@@ -3548,11 +3550,12 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "getrandom 0.2.3",
  "hex-literal",
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
- "pallet-libra",
+ "pallet-p2p_payment",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-timestamp",
@@ -3794,7 +3797,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-libra"
+name = "pallet-p2p_payment"
 version = "3.0.0-monthly-2021-10"
 dependencies = [
  "frame-benchmarking",
@@ -3802,6 +3805,7 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",

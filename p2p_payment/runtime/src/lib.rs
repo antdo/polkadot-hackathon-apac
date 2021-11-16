@@ -41,7 +41,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 /// Import the template pallet.
-pub use pallet_libra;
+pub use pallet_p2p_payment;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -90,8 +90,8 @@ pub mod opaque {
 //   https://substrate.dev/docs/en/knowledgebase/runtime/upgrades#runtime-versioning
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("node-libra"),
-	impl_name: create_runtime_str!("node-libra"),
+	spec_name: create_runtime_str!("node-p2p_payment"),
+	impl_name: create_runtime_str!("node-p2p_payment"),
 	authoring_version: 1,
 	// The version of the runtime specification. A full node will not attempt to use its native
 	//   runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
@@ -272,9 +272,10 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-/// Configure the pallet-libra in pallets/libra.
-impl pallet_libra::Config for Runtime {
+/// Configure the pallet-p2p_payment in pallets/p2p_payment.
+impl pallet_p2p_payment::Config for Runtime {
 	type Event = Event;
+	type Currency = Balances;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -292,8 +293,8 @@ construct_runtime!(
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-		// Include the custom logic from the pallet-libra in the runtime.
-		TemplateModule: pallet_libra::{Pallet, Call, Storage, Event<T>},
+		// Include the custom logic from the pallet-p2p_payment in the runtime.
+		P2pPayment: pallet_p2p_payment::{Pallet, Call, Config<T>, Storage, Event<T>},
 	}
 );
 
@@ -504,7 +505,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
 			add_benchmark!(params, batches, pallet_balances, Balances);
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
-			add_benchmark!(params, batches, pallet_libra, TemplateModule);
+			add_benchmark!(params, batches, pallet_p2p_payment, TemplateModule);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
