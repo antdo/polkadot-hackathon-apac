@@ -148,10 +148,14 @@ export default function ProcessPayment(props) {
           <Text size={500} marginRight={8}>
             {payment.name}
           </Text>
+        </Pane>
+
+        <Pane marginTop={8}>
           <PaymentStatus status={payment.status}></PaymentStatus>
         </Pane>
+
         <Heading marginTop={16} size={600}>
-          {payment.amount} $scale
+          {payment.amount} libra
         </Heading>
         <Pane marginTop="16px">
           <Text size={400} marginTop={32}>
@@ -160,9 +164,15 @@ export default function ProcessPayment(props) {
         </Pane>
         {accountPair && accountPair.address && (
           <Pane marginTop={32} display="flex" justifyContent="flex-start">
-            {payment.status !== 'Completed' && payment.status !== 'Cancelled' &&
+            {payment.status !== 'Completed' &&
+              payment.status !== 'Cancelled' &&
               accountPair.address === payment.payee && (
-                <Button onClick={cancelPayment} isLoading={isCancelling} marginRight={8} intent="danger">
+                <Button
+                  onClick={cancelPayment}
+                  isLoading={isCancelling}
+                  marginRight={8}
+                  intent="danger"
+                >
                   Cancel payment
                 </Button>
               )}

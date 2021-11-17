@@ -8,31 +8,12 @@ import {
   SelectMenu,
   toaster,
 } from 'evergreen-ui';
+import { formatBalance } from '@polkadot/util';
 
 import suportedCurrencies from '../utils/supportedCurrencies';
 import { getFromAcct } from '../utils/tx';
 
 import { useSubstrate } from '../substrate-lib';
-
-// const txParamFields = [
-//   {
-//     name: 'name',
-//     type: 'string',
-//   },
-//   {
-//     name: 'description',
-//     type: 'string',
-//   },
-//   {
-//     name: 'amount',
-//     type: 'Balance',
-//   },
-//   {
-//     name: 'payer',
-//     type: 'Account',
-//     optional: true,
-//   },
-// ];
 
 export default function PaymentForm(props) {
   const { accountPair, onFormClosed } = props;
@@ -50,6 +31,7 @@ export default function PaymentForm(props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { api } = useSubstrate();
+  console.log();
 
   const updatePaymentForm = (field, value) => {
     setPaymentForm({
@@ -71,7 +53,7 @@ export default function PaymentForm(props) {
         .createPayment(
           paymentForm.name,
           paymentForm.description,
-          paymentForm.amount,
+          parseFloat(paymentForm.amount * 10**12),
           paymentForm.payer
         )
         .signAndSend(fromAcct, ({ status }) => {

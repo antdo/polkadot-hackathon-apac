@@ -1,7 +1,9 @@
+import { formatBalance } from '@polkadot/util';
+
 const Payment = (id, data) => ({
   id,
   name: data.name.toHuman(),
-  amount: data.amount.toHuman(),
+  amount: formatBalance(data.amount, { withSi: false, forceUnit: '-' }, 12),
   description: data.description.toHuman(),
   payer: data.payer.toJSON(),
   payee: data.payee.toJSON(),

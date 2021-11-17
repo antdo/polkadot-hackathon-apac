@@ -167,6 +167,10 @@ git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-10'
 version = '4.0.0-dev'
 
+[dependencies.serde_json]
+default-features = false
+version = '1.0.68'
+
 [features]
 default = []
 runtime-benchmarks = ['node-p2p_payment-runtime/runtime-benchmarks']

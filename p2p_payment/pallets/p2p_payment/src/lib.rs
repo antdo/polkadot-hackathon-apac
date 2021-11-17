@@ -93,6 +93,7 @@ pub mod pallet {
         PaymentCompleted(T::AccountId, T::Hash),
         PaymentDisputed(T::AccountId, T::Hash),
         PaymentCancelled(T::AccountId, T::Hash),
+        ResolverCandidateCreated(T::AccountId),
     }
 
     #[pallet::storage]
@@ -248,14 +249,22 @@ pub mod pallet {
 
         #[pallet::weight(100)]
         pub fn dispute_payment(origin: OriginFor<T>, payment_id: T::Hash) -> DispatchResult {
-            let payer = ensure_signed(origin)?;
+            let sender = ensure_signed(origin)?;
 
-            Self::deposit_event(Event::PaymentDisputed(payer, payment_id));
+            let mut payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
+
+            payment.status = PaymentStatus::Disputed;
+            <Payments<T>>::insert(&payment_id, payment);
+
+            Self::deposit_event(Event::PaymentDisputed(sender, payment_id));
             Ok(())
         }
 
         #[pallet::weight(100)]
         pub fn apply_to_be_resolver(origin: OriginFor<T>) -> DispatchResult {
+            let sender = ensure_signed(origin)?;
+
+            Self::deposit_event(Event::ResolverCandidateCreated(sender));
             Ok(())
         }
 

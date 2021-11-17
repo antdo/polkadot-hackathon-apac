@@ -2,6 +2,8 @@ import ChainState from './pages/ChainState';
 import DashBoard from './pages/Dashboard';
 import Payments from './pages/Payments';
 import ProcessPayment from './pages/ProcessPayment';
+import DisputeResolution from './pages/DisputeResolution';
+import Governance from './pages/Governance';
 
 import { DashboardIcon, HomeIcon, PeopleIcon, ShieldIcon } from 'evergreen-ui';
 
@@ -26,14 +28,14 @@ export default [
     name: 'Disputes',
     icon: ShieldIcon,
     exact: true,
-    component: DashBoard,
+    component: DisputeResolution,
   },
   {
     path: '/governance',
     name: 'Governance',
     icon: PeopleIcon,
     exact: true,
-    component: DashBoard,
+    component: Governance,
   },
   {
     path: '/chain-state',
