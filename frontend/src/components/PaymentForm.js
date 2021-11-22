@@ -51,9 +51,9 @@ export default function PaymentForm(props) {
 
       api.tx.p2PPayment
         .createPayment(
-          paymentForm.name,
-          paymentForm.description,
-          parseFloat(paymentForm.amount * 10**12),
+          Buffer.from(paymentForm.name, 'utf-8').toString('base64'),
+          Buffer.from(paymentForm.description, 'utf-8').toString('base64'),
+          parseFloat(paymentForm.amount * 10 ** 12),
           paymentForm.payer
         )
         .signAndSend(fromAcct, ({ status }) => {

@@ -62,7 +62,7 @@ export default function AccountSelector(props) {
         )}
       >
         <Pane display="flex" alignItems="center">
-          <Avatar name={selectedAccount.name} size={40}></Avatar>
+          <Avatar name={(selectedAccount.name || '').split('(')[0]} size={40}></Avatar>
           <Pane display="flex" alignItems="center" marginLeft="16px">
             <Text>{shortedAddress()}</Text>
           </Pane>

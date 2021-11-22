@@ -4,7 +4,7 @@ import { useParams } from 'react-router';
 import PaymentStatus from '../components/PaymentStatus';
 
 import { useSubstrate } from '../substrate-lib';
-import PaymentModel from '../services/models/Payment';
+import PaymentModel from '../utils/models/Payment';
 import { getFromAcct } from '../utils/tx';
 
 export default function ProcessPayment(props) {
@@ -143,7 +143,7 @@ export default function ProcessPayment(props) {
 
   return (
     <Pane>
-      <Pane maxWidth="320px" margin="auto" paddingTop="48px">
+      <Pane maxWidth="480px" margin="auto" paddingTop="48px">
         <Pane>
           <Text size={500} marginRight={8}>
             {payment.name}
@@ -180,7 +180,7 @@ export default function ProcessPayment(props) {
             {payment.status === 'Deposited' &&
               (accountPair.address === payment.payee ||
                 accountPair.address === payment.payer) && (
-                <Button marginRight={8} intent="danger">
+                <Button marginRight={8} appearance="primary" intent="danger">
                   Dispute
                 </Button>
               )}

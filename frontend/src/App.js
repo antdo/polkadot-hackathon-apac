@@ -30,7 +30,7 @@ export default function App() {
     return <Loader message="Connecting to the chain..." />;
 
   return (
-    <Pane height="100vh" width="100%" maxWidth="1480px" display="flex">
+    <Pane height="100vh" width="100%" maxWidth="1800px" display="flex">
       <Pane
         height="100%"
         background="tint"

@@ -27,6 +27,13 @@ pub mod pallet {
 
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
     #[scale_info(skip_type_params(T))]
+    pub struct Image<T: Config> {
+        pub hash: T::Hash,
+        pub url: Vec<u8>,
+    }
+    
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+    #[scale_info(skip_type_params(T))]
     #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
     pub enum PaymentStatus {
         WaitingForDeposit,
@@ -41,6 +48,7 @@ pub mod pallet {
     pub struct Payment<T: Config> {
         pub order: u128,
         pub name: Vec<u8>,
+        pub images: Vec<Image>,
         pub description: Vec<u8>,
         pub amount: BalanceOf<T>,
         pub payer: Option<AccountOf<T>>,
@@ -53,8 +61,9 @@ pub mod pallet {
     #[scale_info(skip_type_params(T))]
     #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
     pub enum ResolverStatus {
-        New,
+        Canditate,
         Active,
+        Banned,
     }
 
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
@@ -62,7 +71,36 @@ pub mod pallet {
     pub struct Resolver<T: Config> {
         pub account: AccountOf<T>,
         pub name: Vec<u8>,
-        pub detail: Vec<u8>,
+        pub application: Vec<u8>,
+        pub staked: BalanceOf<T>,
+        pub status: ResolverStatus,
+    }
+
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+    #[scale_info(skip_type_params(T))]
+    #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+    pub enum DisputeStatus {
+        Processing,
+        Resolved,
+        Escalated,
+    }
+
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+    #[scale_info(skip_type_params(T))]
+    pub struct DisputeProof<T: Config> {
+        pub provider: AccountOf<T>,
+        pub description: Vec<u8>,
+        pub images
+    }
+
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+    #[scale_info(skip_type_params(T))]
+    pub struct DisputeProposal<T: Config> {
+        pub issuer: AccountOf<T>,
+        pub buyer: AccountOf<T>,
+        pub seller: AccountOf<T>,
+        proof
+        pub application: Vec<u8>,
         pub staked: BalanceOf<T>,
         pub status: ResolverStatus,
     }
@@ -110,6 +148,11 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn payments_owned)]
+    pub(super) type PaymentsOwned<T: Config> =
+        StorageMap<_, Twox64Concat, T::AccountId, Vec<T::Hash>, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn assigned_disputes)]
     pub(super) type PaymentsOwned<T: Config> =
         StorageMap<_, Twox64Concat, T::AccountId, Vec<T::Hash>, ValueQuery>;
 
@@ -264,7 +307,7 @@ pub mod pallet {
         pub fn apply_to_be_resolver(origin: OriginFor<T>) -> DispatchResult {
             let sender = ensure_signed(origin)?;
 
-            Self::deposit_event(Event::ResolverCandidateCreated(sender));
+            Self::deposit_event(Event::ResolverCreated(sender));
             Ok(())
         }
 
