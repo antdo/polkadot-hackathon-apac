@@ -10,7 +10,7 @@ pub mod pallet {
         sp_runtime::traits::Hash,
         sp_std::vec::Vec,
         traits::{
-            Currency, ExistenceRequirement, LockIdentifier, LockableCurrency, Randomness,
+            Currency, ExistenceRequirement, Get, LockIdentifier, LockableCurrency, Randomness,
             WithdrawReasons,
         },
         transactional,
@@ -27,11 +27,11 @@ pub mod pallet {
 
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
     #[scale_info(skip_type_params(T))]
-    pub struct Image<T: Config> {
-        pub hash: T::Hash,
+    pub struct Image {
+        pub proof: Vec<u8>,
         pub url: Vec<u8>,
     }
-    
+
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
     #[scale_info(skip_type_params(T))]
     #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -73,7 +73,15 @@ pub mod pallet {
         pub name: Vec<u8>,
         pub application: Vec<u8>,
         pub staked: BalanceOf<T>,
+        pub delegators: Vec<ResolverDelegator<T>>,
         pub status: ResolverStatus,
+    }
+
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+    #[scale_info(skip_type_params(T))]
+    pub struct ResolverDelegator<T: Config> {
+        pub account: AccountOf<T>,
+        pub amount: BalanceOf<T>,
     }
 
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
@@ -90,19 +98,18 @@ pub mod pallet {
     pub struct DisputeProof<T: Config> {
         pub provider: AccountOf<T>,
         pub description: Vec<u8>,
-        pub images
+        pub images: Vec<Image>,
     }
 
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
     #[scale_info(skip_type_params(T))]
     pub struct DisputeProposal<T: Config> {
         pub issuer: AccountOf<T>,
-        pub buyer: AccountOf<T>,
-        pub seller: AccountOf<T>,
-        proof
-        pub application: Vec<u8>,
-        pub staked: BalanceOf<T>,
-        pub status: ResolverStatus,
+        pub payer: AccountOf<T>,
+        pub payee: AccountOf<T>,
+        pub resolver: Resolver<T>,
+        pub payment_id: T::Hash,
+        pub proofs: Vec<DisputeProof<T>>,
     }
 
     #[pallet::pallet]
@@ -113,6 +120,12 @@ pub mod pallet {
     pub trait Config: frame_system::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
         type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+        type ResolverRandomness: Randomness<Self::Hash, Self::BlockNumber>;
+
+        #[pallet::constant]
+        type ResolverInitialAmount: Get<BalanceOf<Self>>;
+        #[pallet::constant]
+        type ResolverActiveRequiredAmount: Get<BalanceOf<Self>>;
     }
 
     #[pallet::error]
@@ -121,6 +134,8 @@ pub mod pallet {
         PaymentsCountOverflow,
         NotEnoughBalance,
         AccessDenied,
+        ResolverNotExist,
+        PayerNotExist,
     }
 
     #[pallet::event]
@@ -131,7 +146,10 @@ pub mod pallet {
         PaymentCompleted(T::AccountId, T::Hash),
         PaymentDisputed(T::AccountId, T::Hash),
         PaymentCancelled(T::AccountId, T::Hash),
-        ResolverCandidateCreated(T::AccountId),
+        ResolverCreated(T::AccountId),
+        ResolverStaked(T::AccountId, BalanceOf<T>),
+        ResolverUnstaked(T::AccountId, BalanceOf<T>),
+        DisputeSolved(T::Hash),
     }
 
     #[pallet::storage]
@@ -143,18 +161,26 @@ pub mod pallet {
     pub(super) type Payments<T: Config> = StorageMap<_, Twox64Concat, T::Hash, Payment<T>>;
 
     #[pallet::storage]
-    #[pallet::getter(fn resolvers)]
-    pub(super) type Resolvers<T: Config> = StorageMap<_, Twox64Concat, T::Hash, Payment<T>>;
-
-    #[pallet::storage]
     #[pallet::getter(fn payments_owned)]
     pub(super) type PaymentsOwned<T: Config> =
         StorageMap<_, Twox64Concat, T::AccountId, Vec<T::Hash>, ValueQuery>;
 
     #[pallet::storage]
-    #[pallet::getter(fn assigned_disputes)]
-    pub(super) type PaymentsOwned<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, Vec<T::Hash>, ValueQuery>;
+    #[pallet::getter(fn resolvers)]
+    pub(super) type Resolvers<T: Config> = StorageMap<_, Twox64Concat, AccountOf<T>, Resolver<T>>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn all_resolvers)]
+    pub(super) type AllResolvers<T: Config> = StorageValue<_, Vec<AccountOf<T>>, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn active_resolvers_ids)]
+    pub(super) type ActiveResolversIds<T: Config> = StorageValue<_, Vec<AccountOf<T>>, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn dispute_proposals)]
+    pub(super) type DisputeProposals<T: Config> =
+        StorageMap<_, Twox64Concat, T::Hash, DisputeProposal<T>>;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
@@ -183,6 +209,7 @@ pub mod pallet {
             description: Vec<u8>,
             amount: BalanceOf<T>,
             payer: Option<AccountOf<T>>,
+            images: Vec<Image>,
         ) -> DispatchResult {
             let owner = ensure_signed(origin)?;
 
@@ -194,6 +221,7 @@ pub mod pallet {
                 order,
                 name,
                 description,
+                images,
                 amount,
                 payer,
                 payee: owner.clone(),
@@ -297,25 +325,179 @@ pub mod pallet {
             let mut payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
 
             payment.status = PaymentStatus::Disputed;
-            <Payments<T>>::insert(&payment_id, payment);
+            <Payments<T>>::insert(&payment_id, payment.clone());
+
+            let proposal = DisputeProposal::<T> {
+                issuer: sender.clone(),
+                payer: payment.payer.ok_or(<Error<T>>::PayerNotExist)?,
+                payee: payment.payee,
+                payment_id,
+                resolver: Self::get_resolver().ok_or(<Error<T>>::ResolverNotExist)?,
+                proofs: Vec::new(),
+            };
+
+            let proposal_id = T::Hashing::hash_of(&proposal);
+
+            <DisputeProposals<T>>::insert(&proposal_id, proposal);
 
             Self::deposit_event(Event::PaymentDisputed(sender, payment_id));
             Ok(())
         }
 
         #[pallet::weight(100)]
-        pub fn apply_to_be_resolver(origin: OriginFor<T>) -> DispatchResult {
+        pub fn apply_to_be_resolver(
+            origin: OriginFor<T>,
+            name: Vec<u8>,
+            application: Vec<u8>,
+        ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+
+            let initial_staked = T::ResolverInitialAmount::get();
+
+            ensure!(
+                T::Currency::free_balance(&sender) >= initial_staked,
+                <Error<T>>::NotEnoughBalance
+            );
+
+            T::Currency::set_lock(
+                *b"resolver",
+                &sender,
+                initial_staked.clone(),
+                WithdrawReasons::all(),
+            );
+
+            let resolver = Resolver::<T> {
+                account: sender.clone(),
+                name,
+                application,
+                staked: initial_staked.clone(),
+                delegators: Vec::new(),
+                status: ResolverStatus::Canditate,
+            };
+
+            <Resolvers<T>>::insert(&sender, resolver);
+
+            let mut resolvers_ids = Self::all_resolvers();
+            resolvers_ids.push(sender.clone());
+            <AllResolvers<T>>::set(resolvers_ids);
 
             Self::deposit_event(Event::ResolverCreated(sender));
             Ok(())
         }
 
         #[pallet::weight(100)]
-        pub fn vote_for_resolver_candidate(origin: OriginFor<T>) -> DispatchResult {
+        pub fn stake_to_resolver(
+            origin: OriginFor<T>,
+            resolver_address: AccountOf<T>,
+            amount: BalanceOf<T>,
+        ) -> DispatchResult {
+            let sender = ensure_signed(origin)?;
+
+            ensure!(
+                T::Currency::free_balance(&sender) >= amount,
+                <Error<T>>::NotEnoughBalance
+            );
+
+            let mut resolver =
+                Self::resolvers(resolver_address).ok_or(<Error<T>>::ResolverNotExist)?;
+
+            T::Currency::set_lock(
+                *b"delegate",
+                &sender,
+                amount.clone(),
+                WithdrawReasons::all(),
+            );
+
+            let delegator = ResolverDelegator::<T> {
+                account: sender.clone(),
+                amount: amount.clone(),
+            };
+
+            resolver.delegators.push(delegator);
+            resolver.staked = resolver.staked + amount;
+
+            let required_staked = T::ResolverActiveRequiredAmount::get();
+
+            if resolver.staked >= required_staked {
+                resolver.status = ResolverStatus::Active;
+
+                let mut resolvers_ids = Self::active_resolvers_ids();
+                resolvers_ids.push(sender.clone());
+                <ActiveResolversIds<T>>::set(resolvers_ids);
+            }
+
+            <Resolvers<T>>::insert(&resolver.account, resolver.clone());
+
+            Self::deposit_event(Event::ResolverStaked(sender, amount));
+            Ok(())
+        }
+
+        #[pallet::weight(100)]
+        pub fn unstake_from_resolver(
+            origin: OriginFor<T>,
+            resolver_address: AccountOf<T>,
+            amount: BalanceOf<T>,
+        ) -> DispatchResult {
+            let sender = ensure_signed(origin)?;
+            Self::deposit_event(Event::ResolverUnstaked(sender, amount));
+            Ok(())
+        }
+
+        #[pallet::weight(100)]
+        pub fn submit_proof(
+            origin: OriginFor<T>,
+            dispute_id: T::Hash,
+            description: Vec<u8>,
+            images: Vec<Image>,
+        ) -> DispatchResult {
+            let provider = ensure_signed(origin)?;
+
+            let mut dispute = Self::dispute_proposals(&dispute_id).ok_or(<Error<T>>::DisputeNotExist)?;
+
+            let proof = DisputeProof {
+                provider: provider.clone(),
+                description,
+                images,
+            };
+
+            dispute.proofs.push(proofs);
+
+            <DisputeProposals<T>>::insert(&dispute_id, dispute);
+
+            Ok(())
+        }
+
+        #[pallet::weight(100)]
+        pub fn solve_dispute(
+            origin: OriginFor<T>,
+            dispute_id: T::Hash,
+            winner: AccountId<T>,
+        ) -> DispatchResult {
+            let sender = ensure_signed(origin)?;
+            let dispute = Self::dispute_proposals(dispute_id).ok_or(<Error<T>>::DisputeNotExist)?;
+
+
+            Self::deposit_event(Event::DisputeSolved(sender, amount));
             Ok(())
         }
     }
 
-    impl<T: Config> Pallet<T> {}
+    impl<T: Config> Pallet<T> {
+        pub fn get_resolver() -> Option<Resolver<T>> {
+            let random = T::ResolverRandomness::random(&b"generate_resolver"[..])
+                .0
+                .as_ref()
+                .to_vec();
+
+            let active_resolvers_count = Self::active_resolvers_ids().len();
+
+            let random_num = usize::from(random[0]) % active_resolvers_count;
+
+            let account = Self::active_resolvers_ids()[random_num].clone();
+
+            let resolver = Self::resolvers(&account);
+
+            resolver
+        }
+    }
 }
