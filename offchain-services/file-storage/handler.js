@@ -25,6 +25,10 @@ module.exports.upload = async (event) => {
   if (isExisted) {
     return {
       statusCode: 400,
+      headers: {
+        "Access-Control-Allow-Origin" : "*",
+        "Access-Control-Allow-Credentials" : true,
+      },
       body: JSON.stringify(
         {
           message: 'File already existed!',
@@ -49,6 +53,10 @@ module.exports.upload = async (event) => {
   
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin" : "*",
+        "Access-Control-Allow-Credentials" : true,
+      },
       body: JSON.stringify(
         {
           url: `${S3_BASE_URL}/${request.key}`
@@ -61,6 +69,10 @@ module.exports.upload = async (event) => {
     console.log('ERROR: ', err.message);
     return {
       statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin" : "*",
+        "Access-Control-Allow-Credentials" : true,
+      },
       body: JSON.stringify(
         {
           message: 'Something went wrong!',

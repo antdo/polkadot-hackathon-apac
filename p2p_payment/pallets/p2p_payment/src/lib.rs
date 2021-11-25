@@ -48,8 +48,8 @@ pub mod pallet {
     pub struct Payment<T: Config> {
         pub order: u128,
         pub name: Vec<u8>,
-        pub images: Vec<Image>,
         pub description: Vec<u8>,
+        pub images: Vec<Image>,
         pub amount: BalanceOf<T>,
         pub payer: Option<AccountOf<T>>,
         pub payee: AccountOf<T>,
@@ -134,8 +134,10 @@ pub mod pallet {
         PaymentsCountOverflow,
         NotEnoughBalance,
         AccessDenied,
+        ResolverExist,
         ResolverNotExist,
         PayerNotExist,
+        DisputeNotExist,
     }
 
     #[pallet::event]
@@ -352,6 +354,11 @@ pub mod pallet {
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
 
+            ensure!(
+                !<Resolvers<T>>::contains_key(&sender),
+                <Error<T>>::ResolverExist,
+            );
+
             let initial_staked = T::ResolverInitialAmount::get();
 
             ensure!(
@@ -460,7 +467,7 @@ pub mod pallet {
                 images,
             };
 
-            dispute.proofs.push(proofs);
+            dispute.proofs.push(proof);
 
             <DisputeProposals<T>>::insert(&dispute_id, dispute);
 
@@ -471,13 +478,13 @@ pub mod pallet {
         pub fn solve_dispute(
             origin: OriginFor<T>,
             dispute_id: T::Hash,
-            winner: AccountId<T>,
+            winner: AccountOf<T>,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
             let dispute = Self::dispute_proposals(dispute_id).ok_or(<Error<T>>::DisputeNotExist)?;
 
 
-            Self::deposit_event(Event::DisputeSolved(sender, amount));
+            Self::deposit_event(Event::DisputeSolved(dispute_id));
             Ok(())
         }
     }

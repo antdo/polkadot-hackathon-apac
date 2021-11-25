@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Pane, Spinner, Text, Heading, Button, toaster } from 'evergreen-ui';
+import {
+  Pane,
+  Spinner,
+  Text,
+  Heading,
+  Button,
+  Code,
+  toaster,
+  TextInputField,
+  SelectField,
+  CornerDialog,
+} from 'evergreen-ui';
 import { useParams } from 'react-router';
 import PaymentStatus from '../components/PaymentStatus';
 
@@ -14,7 +25,7 @@ export default function ProcessPayment(props) {
   const [payment, setPayment] = useState(null);
   const [isDepositing, setIsDepositing] = useState(false);
   const [isReleasing, setIsReleasing] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
+  const [isDisputing, setIsDisputing] = useState(false);
 
   const { api } = useSubstrate();
 
@@ -96,8 +107,8 @@ export default function ProcessPayment(props) {
     }
   };
 
-  const cancelPayment = async () => {
-    setIsCancelling(true);
+  const disputePayment = async () => {
+    setIsDisputing(true);
 
     try {
       const { fromAcct, signer } = await getFromAcct(accountPair);
@@ -106,25 +117,55 @@ export default function ProcessPayment(props) {
       }
 
       api.tx.p2PPayment
-        .cancelPayment(payment.id)
+        .disputePayment(payment.id)
         .signAndSend(fromAcct, ({ status }) => {
           if (status.isFinalized) {
             toaster.success(
               `😉 Transaction finalized. Block hash: ${status.asFinalized.toString()}`
             );
-            setIsCancelling(false);
+            setIsReleasing(false);
           } else {
             toaster.notify(`Current transaction status: ${status.type}`);
           }
         })
         .catch(err => {
           toaster.danger(`😞 Transaction Failed: ${err.toString()}`);
-          setIsCancelling(false);
+          setIsReleasing(false);
         });
     } catch (err) {
       toaster.danger(`😞 Failed: ${err.message}`);
     }
   };
+
+  // const cancelPayment = async () => {
+  //   setIsCancelling(true);
+
+  //   try {
+  //     const { fromAcct, signer } = await getFromAcct(accountPair);
+  //     if (signer) {
+  //       api.setSigner(signer);
+  //     }
+
+  //     api.tx.p2PPayment
+  //       .cancelPayment(payment.id)
+  //       .signAndSend(fromAcct, ({ status }) => {
+  //         if (status.isFinalized) {
+  //           toaster.success(
+  //             `😉 Transaction finalized. Block hash: ${status.asFinalized.toString()}`
+  //           );
+  //           setIsCancelling(false);
+  //         } else {
+  //           toaster.notify(`Current transaction status: ${status.type}`);
+  //         }
+  //       })
+  //       .catch(err => {
+  //         toaster.danger(`😞 Transaction Failed: ${err.toString()}`);
+  //         setIsCancelling(false);
+  //       });
+  //   } catch (err) {
+  //     toaster.danger(`😞 Failed: ${err.message}`);
+  //   }
+  // };
 
   if (!payment) {
     return (
@@ -141,75 +182,149 @@ export default function ProcessPayment(props) {
     );
   }
 
+  console.log(payment);
+
   return (
-    <Pane>
-      <Pane maxWidth="480px" margin="auto" paddingTop="48px">
-        <Pane>
-          <Text size={500} marginRight={8}>
-            {payment.name}
-          </Text>
-        </Pane>
+    <Pane
+      position="fixed"
+      width="100vw"
+      height="100vh"
+      top="0"
+      left="0"
+      zIndex={3}
+      display="flex"
+      background="tint2"
+    >
+      <Pane
+        flex="1 0 0"
+        background="greenTint"
+        paddingY={96}
+        paddingRight={48}
+        display="flex"
+        justifyContent="flex-end"
+      >
+        <Pane width={480}>
+          <Pane display="flex">
+            <Pane width="160px" minWidth="160px">
+              <img width="100%" src={(payment.images[0] || {}).url}></img>
+            </Pane>
 
-        <Pane marginTop={8}>
-          <PaymentStatus status={payment.status}></PaymentStatus>
-        </Pane>
-
-        <Heading marginTop={16} size={600}>
-          {payment.amount} libra
-        </Heading>
-        <Pane marginTop="16px">
-          <Text size={400} marginTop={32}>
-            {payment.description}
-          </Text>
-        </Pane>
-        {accountPair && accountPair.address && (
-          <Pane marginTop={32} display="flex" justifyContent="flex-start">
-            {payment.status !== 'Completed' &&
-              payment.status !== 'Cancelled' &&
-              accountPair.address === payment.payee && (
-                <Button
-                  onClick={cancelPayment}
-                  isLoading={isCancelling}
-                  marginRight={8}
-                  intent="danger"
-                >
-                  Cancel payment
-                </Button>
-              )}
-
-            {payment.status === 'Deposited' &&
-              (accountPair.address === payment.payee ||
-                accountPair.address === payment.payer) && (
-                <Button marginRight={8} appearance="primary" intent="danger">
-                  Dispute
-                </Button>
-              )}
-
-            {payment.status === 'WaitingForDeposit' &&
-              accountPair.address !== payment.payee && (
-                <Button
-                  marginRight={8}
-                  isLoading={isDepositing}
-                  onClick={depositPayment}
-                  appearance="primary"
-                >
-                  Deposit
-                </Button>
-              )}
-
-            {payment.status === 'Deposited' &&
-              accountPair.address === payment.payer && (
-                <Button
-                  isLoading={isReleasing}
-                  onClick={completePayment}
-                  marginRight={8}
-                  intent="success"
-                >
-                  Release Fund
-                </Button>
-              )}
+            <Pane paddingLeft="32px">
+              <Pane>
+                <Text size={500} marginRight={8}>
+                  {payment.name}
+                </Text>
+                <PaymentStatus status={payment.status}></PaymentStatus>
+              </Pane>
+              <Heading marginTop={16} size={700}>
+                {payment.amount} libra
+              </Heading>
+            </Pane>
           </Pane>
-        )}
+          <Pane borderTop="solid 1px #c1c4d6" marginTop={16} paddingTop={16}>
+            <Heading size={500}>
+              About this payment
+            </Heading>
+            <Pane marginTop={16}>
+              <Code size={300} appearance="minimal" whiteSpace="pre-wrap">
+                {payment.description}
+              </Code>
+            </Pane>
+          </Pane>
+        </Pane>
+      </Pane>
+      <Pane
+        flex="1 0 0"
+        background="white"
+        elevation="1"
+        paddingLeft={48}
+        paddingY={96}
+      >
+        <Pane maxWidth={420}>
+          <Heading size={600} marginBottom={32}>
+            Payment detail
+          </Heading>
+
+          <TextInputField
+            label="Receiver"
+            description="The fund will be transfer to this address after payment completed"
+            value={payment.payee}
+            readOnly
+            disabled
+          />
+
+          <Pane display="flex">
+            <TextInputField
+              flexGrow="1"
+              label="Amount"
+              value={payment.amount}
+              marginRight={16}
+              disabled
+              readOnly
+            />
+            <TextInputField
+              width="80px"
+              label="Currency"
+              value="libra"
+              readOnly
+              disabled
+            />
+          </Pane>
+
+          <Pane>
+            <SelectField
+              label="Pay with"
+              description="Select the wallet that use to pay"
+            >
+              <option value="foo" selected>
+                5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+              </option>
+              <option value="bar">
+                5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+              </option>
+            </SelectField>
+          </Pane>
+
+          <Pane marginTop={32} display="flex" justifyContent="flex-end">
+            {payment.status === 'WaitingForDeposit' && (
+              <Button
+                onClick={depositPayment}
+                isLoading={isDepositing}
+                disabled={isDepositing}
+                size="medium"
+                appearance="primary"
+              >
+                Deposit
+              </Button>
+            )}
+
+            {payment.status === 'Deposited' && (
+              <Button
+                onClick={disputePayment}
+                isLoading={isDisputing}
+                disabled={isDisputing || isReleasing}
+                size="medium"
+                marginRight={16}
+                appearance="primary"
+                intent="danger"
+              >
+                Dispute
+              </Button>
+            )}
+
+            {payment.status === 'Deposited' && (
+              <Button
+                onClick={completePayment}
+                isLoading={isReleasing}
+                disabled={isReleasing || isDisputing}
+                size="medium"
+                appearance="primary"
+              >
+                Realease fund
+              </Button>
+            )}
+          </Pane>
+        </Pane>
       </Pane>
     </Pane>
   );

@@ -56,9 +56,10 @@ functions:
   upload:
     handler: handler.upload
     events:
-      - httpApi:
+      - http:
           path: /upload
           method: post
+          cors: true
 
 resources:
  Resources:

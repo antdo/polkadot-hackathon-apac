@@ -64,20 +64,24 @@ export default function Governance(props) {
     return '';
   };
 
+  const isResolver = !!resolverIds.find(id => accountPair.address === id);
+
   return (
     <Pane>
       <Pane display="flex" justifyContent="flex-end" padding={16}>
-        <Pane>
-          <Button
-            appearance="primary"
-            onClick={() => setHasApplicationForm(true)}
-          >
-            Apply to be a resolver
-          </Button>
-        </Pane>
+        {!isResolver && (
+          <Pane>
+            <Button
+              appearance="primary"
+              onClick={() => setHasApplicationForm(true)}
+            >
+              Apply to be a resolver
+            </Button>
+          </Pane>
+        )}
       </Pane>
 
-      <Pane marginTop={32} display='grid' gridTemplateColumns="1fr 1fr 1fr 1fr">
+      <Pane marginTop={32} display="grid" gridTemplateColumns="1fr 1fr 1fr 1fr">
         {resolvers.map(resolver => (
           <Card maxWidth="480px" elevation="1" padding={16} margin={8}>
             <Pane>
@@ -102,7 +106,16 @@ export default function Governance(props) {
             </Pane>
 
             <Pane marginTop="16px" display="flex" justifyContent="flex-end">
-              <Button onClick={() => { setSelectedResolver(resolver) }} appearance="primary">Delegate</Button>
+              {resolver.account !== accountPair.address && (
+                <Button
+                  onClick={() => {
+                    setSelectedResolver(resolver);
+                  }}
+                  appearance="primary"
+                >
+                  Delegate
+                </Button>
+              )}
             </Pane>
           </Card>
         ))}
@@ -116,7 +129,6 @@ export default function Governance(props) {
         shouldCloseOnOverlayClick={false}
       >
         {
-          selectedResolver && 
           <ResolverDeletatingConfirmation
             accountPair={accountPair}
             resolver={selectedResolver}

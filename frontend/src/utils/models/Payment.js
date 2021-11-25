@@ -7,6 +7,10 @@ const Payment = (id, data) => ({
   description: Buffer.from(data.description.toHuman(), 'base64').toString(
     'utf-8'
   ),
+  images: data.images.toHuman().map(image => ({
+    proof: image.proof,
+    url: Buffer.from(image.url, 'base64').toString('utf-8'),
+  })),
   payer: data.payer.toJSON(),
   payee: data.payee.toJSON(),
   updatedAt: data.createdAtHash.toHuman(),

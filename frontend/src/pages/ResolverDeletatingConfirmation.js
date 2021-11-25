@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
-import {
-  Pane,
-  Button,
-  Text,
-  TextInputField,
-  toaster,
-} from 'evergreen-ui';
+import { Pane, Button, TextInputField, toaster } from 'evergreen-ui';
 
 import { getFromAcct } from '../utils/tx';
 
 import { useSubstrate } from '../substrate-lib';
-
-const { decodeAddress, encodeAddress } = require('@polkadot/keyring');
 
 export default function ResolverDeletatingConfirmation(props) {
   const { accountPair, resolver, onFormClosed } = props;
@@ -34,7 +26,7 @@ export default function ResolverDeletatingConfirmation(props) {
       api.tx.p2PPayment
         .stakeToResolver(
           resolver.account,
-          parseFloat(amount * 10 ** 12)
+          `${Number.parseInt(amount * 10 ** 12)}`
         )
         .signAndSend(fromAcct, ({ status }) => {
           if (status.isFinalized) {
@@ -52,6 +44,7 @@ export default function ResolverDeletatingConfirmation(props) {
           setIsSubmitting(false);
         });
     } catch (err) {
+      console.log(err);
       toaster.danger(`😞 Failed: ${err.message}`);
     }
   };
@@ -64,40 +57,38 @@ export default function ResolverDeletatingConfirmation(props) {
 
   return (
     <Pane>
-      <TextInputField
-        label="Name:"
-        value={resolver.name}
-        readOnly
-      />
+      {resolver && (
+        <Pane>
+          <TextInputField label="Name:" value={resolver.name} readOnly />
 
-      <TextInputField
-        label="Address:"
-        value={resolver.account}
-        readOnly
-      />
+          <TextInputField label="Address:" value={resolver.account} readOnly />
 
-      <TextInputField
-        label="Amount:"
-        placeholder="Staking amount"
-        value={amount}
-        onInput={e => { setAmount(e.target.value) }}
-        required
-      />
+          <TextInputField
+            label="Amount:"
+            placeholder="Staking amount"
+            value={amount}
+            onInput={e => {
+              setAmount(e.target.value);
+            }}
+            required
+          />
 
-      <Pane display="flex" justifyContent="flex-end" paddingBottom={24}>
-        <Button disabled={isSubmitting} onClick={discardForm}>
-          Discard
-        </Button>
-        <Button
-          isLoading={isSubmitting}
-          disabled={isSubmitting}
-          appearance="primary"
-          marginLeft={16}
-          onClick={submitForm}
-        >
-          Delegate
-        </Button>
-      </Pane>
+          <Pane display="flex" justifyContent="flex-end" paddingBottom={24}>
+            <Button disabled={isSubmitting} onClick={discardForm}>
+              Discard
+            </Button>
+            <Button
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+              appearance="primary"
+              marginLeft={16}
+              onClick={submitForm}
+            >
+              Delegate
+            </Button>
+          </Pane>
+        </Pane>
+      )}
     </Pane>
   );
 }

@@ -210,7 +210,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/file-storage/dev/1637580233261-2021-11-22T11:23:53.261Z/file-storage.zip"
+          "S3Key": "serverless/file-storage/dev/1637815708616-2021-11-25T04:48:28.616Z/file-storage.zip"
         },
         "Handler": "handler.upload",
         "Runtime": "nodejs12.x",
@@ -228,37 +228,148 @@
         "UploadLogGroup"
       ]
     },
-    "UploadLambdaVersion1AR32uAgkuYnMYX3LbufS7lPobI5LCFmWyFeS9FU": {
+    "UploadLambdaVersionuDsYYtphKiSsQ7HwkP6dNW70yeR1ZAcGVXkHSH08": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "UploadLambdaFunction"
         },
-        "CodeSha256": "x/58+hioXKv26z7moc9WuKkTAna3LfpsfU4OLhxuJmE="
+        "CodeSha256": "LjfG7qJYlQAxXmgcc4/IhMg45hAq6gEKvDnpXELBtHA="
       }
     },
-    "HttpApi": {
-      "Type": "AWS::ApiGatewayV2::Api",
+    "ApiGatewayRestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
       "Properties": {
         "Name": "dev-file-storage",
-        "ProtocolType": "HTTP"
+        "EndpointConfiguration": {
+          "Types": [
+            "EDGE"
+          ]
+        },
+        "Policy": ""
       }
     },
-    "HttpApiStage": {
-      "Type": "AWS::ApiGatewayV2::Stage",
+    "ApiGatewayResourceUpload": {
+      "Type": "AWS::ApiGateway::Resource",
       "Properties": {
-        "ApiId": {
-          "Ref": "HttpApi"
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
         },
-        "StageName": "$default",
-        "AutoDeploy": true,
-        "DefaultRouteSettings": {
-          "DetailedMetricsEnabled": false
+        "PathPart": "upload",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
         }
       }
     },
-    "UploadLambdaPermissionHttpApi": {
+    "ApiGatewayMethodUploadOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceUpload"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodUploadPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceUpload"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "UploadLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "UploadLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1637815704961": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "StageName": "dev"
+      },
+      "DependsOn": [
+        "ApiGatewayMethodUploadOptions",
+        "ApiGatewayMethodUploadPost"
+      ]
+    },
+    "UploadLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
@@ -287,51 +398,13 @@
               },
               ":",
               {
-                "Ref": "HttpApi"
+                "Ref": "ApiGatewayRestApi"
               },
-              "/*"
+              "/*/*"
             ]
           ]
         }
       }
-    },
-    "HttpApiIntegrationUpload": {
-      "Type": "AWS::ApiGatewayV2::Integration",
-      "Properties": {
-        "ApiId": {
-          "Ref": "HttpApi"
-        },
-        "IntegrationType": "AWS_PROXY",
-        "IntegrationUri": {
-          "Fn::GetAtt": [
-            "UploadLambdaFunction",
-            "Arn"
-          ]
-        },
-        "PayloadFormatVersion": "2.0",
-        "TimeoutInMillis": 6500
-      }
-    },
-    "HttpApiRoutePostUpload": {
-      "Type": "AWS::ApiGatewayV2::Route",
-      "Properties": {
-        "ApiId": {
-          "Ref": "HttpApi"
-        },
-        "RouteKey": "POST /upload",
-        "Target": {
-          "Fn::Join": [
-            "/",
-            [
-              "integrations",
-              {
-                "Ref": "HttpApiIntegrationUpload"
-              }
-            ]
-          ]
-        }
-      },
-      "DependsOn": "HttpApiIntegrationUpload"
     },
     "FileBucket": {
       "Type": "AWS::S3::Bucket",
@@ -352,30 +425,21 @@
     "UploadLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "UploadLambdaVersion1AR32uAgkuYnMYX3LbufS7lPobI5LCFmWyFeS9FU"
+        "Ref": "UploadLambdaVersionuDsYYtphKiSsQ7HwkP6dNW70yeR1ZAcGVXkHSH08"
       },
       "Export": {
         "Name": "sls-file-storage-dev-UploadLambdaFunctionQualifiedArn"
       }
     },
-    "HttpApiId": {
-      "Description": "Id of the HTTP API",
-      "Value": {
-        "Ref": "HttpApi"
-      },
-      "Export": {
-        "Name": "sls-file-storage-dev-HttpApiId"
-      }
-    },
-    "HttpApiUrl": {
-      "Description": "URL of the HTTP API",
+    "ServiceEndpoint": {
+      "Description": "URL of the service endpoint",
       "Value": {
         "Fn::Join": [
           "",
           [
             "https://",
             {
-              "Ref": "HttpApi"
+              "Ref": "ApiGatewayRestApi"
             },
             ".execute-api.",
             {
@@ -384,12 +448,13 @@
             ".",
             {
               "Ref": "AWS::URLSuffix"
-            }
+            },
+            "/dev"
           ]
         ]
       },
       "Export": {
-        "Name": "sls-file-storage-dev-HttpApiUrl"
+        "Name": "sls-file-storage-dev-ServiceEndpoint"
       }
     }
   }
