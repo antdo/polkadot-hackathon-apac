@@ -7,7 +7,14 @@ import PaymentModel from '../utils/models/Payment';
 
 import { useSubstrate } from '../substrate-lib';
 
-const tabs = ['All', 'WaitingForDeposit', 'Completed', 'Disputed', 'Cancelled'];
+const tabs = [
+  'All',
+  'WaitingForDeposit',
+  'Deposited',
+  'Completed',
+  'Disputed',
+  'Cancelled',
+];
 
 export default function Payments(props) {
   const [selectedIndex, setSelectedIndex] = useState(0);

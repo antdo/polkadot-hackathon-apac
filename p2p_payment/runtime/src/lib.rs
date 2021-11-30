@@ -272,10 +272,18 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	pub const ResolverInitialAmount: Balance = 100_000_000_000_000_000;
+	pub const ResolverActiveRequiredAmount: Balance = 500_000_000_000_000_000;
+}
+
 /// Configure the pallet-p2p_payment in pallets/p2p_payment.
 impl pallet_p2p_payment::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
+	type ResolverRandomness = RandomnessCollectiveFlip;
+	type ResolverInitialAmount = ResolverInitialAmount;
+	type ResolverActiveRequiredAmount = ResolverActiveRequiredAmount;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

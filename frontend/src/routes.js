@@ -1,9 +1,11 @@
 import ChainState from './pages/ChainState';
-import DashBoard from './pages/Dashboard';
+import PayHistory from './pages/PayHistory';
 import Payments from './pages/Payments';
 import ProcessPayment from './pages/ProcessPayment';
+import Disputes from './pages/Disputes';
+import Resolvers from './pages/Resolvers';
 
-import { DashboardIcon, HomeIcon, PeopleIcon, ShieldIcon } from 'evergreen-ui';
+import { DashboardIcon, HomeIcon, PeopleIcon, ShieldIcon, HistoryIcon } from 'evergreen-ui';
 
 export default [
   {
@@ -14,8 +16,15 @@ export default [
     exact: true,
   },
   {
+    path: '/pay-history',
+    name: 'Pay History',
+    icon: HistoryIcon,
+    component: PayHistory,
+    exact: true,
+  },
+  {
     path: '/payments/:id',
-    name: 'ProcessPayment',
+    name: 'Process Payment',
     icon: HomeIcon,
     exact: true,
     sidebarExcluded: true,
@@ -26,14 +35,14 @@ export default [
     name: 'Disputes',
     icon: ShieldIcon,
     exact: true,
-    component: DashBoard,
+    component: Disputes,
   },
   {
-    path: '/governance',
-    name: 'Governance',
+    path: '/resolvers',
+    name: 'Resolvers',
     icon: PeopleIcon,
     exact: true,
-    component: DashBoard,
+    component: Resolvers,
   },
   {
     path: '/chain-state',

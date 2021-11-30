@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pane, Table, Tooltip, IconButton, DuplicateIcon } from 'evergreen-ui';
 import PaymentStatus from './PaymentStatus';
+import copyToClipBoard from '../utils/copyToClipboard';
 
 export default function PaymentsTable(props) {
   const { payments, height } = props;
@@ -22,7 +23,11 @@ export default function PaymentsTable(props) {
                 <Tooltip content="Copy payment url">
                   <IconButton
                     size="small"
-                    onClick={console.log(`${window.location.origin}/payments/${payment.id}`)}
+                    onClick={() => {
+                      copyToClipBoard(
+                        `${window.location.origin}/payments/${payment.id}`
+                      );
+                    }}
                     marginRight={16}
                     icon={<DuplicateIcon size={12} />}
                   />

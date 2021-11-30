@@ -9,30 +9,12 @@ import {
   toaster,
 } from 'evergreen-ui';
 
+import ImagesUploader from './ImagesUploader';
+
 import suportedCurrencies from '../utils/supportedCurrencies';
 import { getFromAcct } from '../utils/tx';
 
 import { useSubstrate } from '../substrate-lib';
-
-// const txParamFields = [
-//   {
-//     name: 'name',
-//     type: 'string',
-//   },
-//   {
-//     name: 'description',
-//     type: 'string',
-//   },
-//   {
-//     name: 'amount',
-//     type: 'Balance',
-//   },
-//   {
-//     name: 'payer',
-//     type: 'Account',
-//     optional: true,
-//   },
-// ];
 
 export default function PaymentForm(props) {
   const { accountPair, onFormClosed } = props;
@@ -46,6 +28,7 @@ export default function PaymentForm(props) {
     },
     payer: '',
     description: '',
+    images: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,10 +52,14 @@ export default function PaymentForm(props) {
 
       api.tx.p2PPayment
         .createPayment(
-          paymentForm.name,
-          paymentForm.description,
-          paymentForm.amount,
-          paymentForm.payer
+          Buffer.from(paymentForm.name, 'utf-8').toString('base64'),
+          Buffer.from(paymentForm.description, 'utf-8').toString('base64'),
+          `${Number.parseInt(paymentForm.amount * 10 ** 12)}`,
+          paymentForm.payer,
+          paymentForm.images.map(item => ({
+            ...item,
+            url: Buffer.from(item.url, 'utf-8').toString('base64'),
+          }))
         )
         .signAndSend(fromAcct, ({ status }) => {
           if (status.isFinalized) {
@@ -102,44 +89,56 @@ export default function PaymentForm(props) {
 
   return (
     <Pane>
-      <TextInputField
-        label="Payment name:"
-        placeholder="Payment name"
-        value={paymentForm.name}
-        onInput={e => updatePaymentForm('name', e.target.value)}
-        required
-      />
-      <Pane display="flex" alignItems="flex-end">
-        <TextInputField
-          flex={1}
-          value={paymentForm.amount}
-          onInput={e => updatePaymentForm('amount', e.target.value)}
-          label="Payment amount:"
-          placeholder="Amount of currency"
-          required
-        />
-        <Pane
-          display="flex"
-          flexDirection="column"
-          marginLeft="8px"
-          marginBottom="24px"
-          width="80px"
-        >
-          <Label marginBottom="8px">Currency:</Label>
-          <SelectMenu
-            title="Select name"
-            options={suportedCurrencies}
-            selected={paymentForm.currency}
-            hasFilter={false}
-            hasTitle={false}
-            onSelect={item =>
-              setPaymentForm({ ...paymentForm, currency: item })
-            }
-          >
-            <Button>{paymentForm.currency.label}</Button>
-          </SelectMenu>
+      <Pane display="flex" justifyContent="space-between">
+        <Pane flex="2 0 0" paddingRight="16px">
+          <TextInputField
+            label="Payment name:"
+            placeholder="Payment name"
+            value={paymentForm.name}
+            onInput={e => updatePaymentForm('name', e.target.value)}
+            required
+          />
+          <Pane display="flex" alignItems="flex-end">
+            <TextInputField
+              flex={1}
+              value={paymentForm.amount}
+              onInput={e => updatePaymentForm('amount', e.target.value)}
+              label="Payment amount:"
+              placeholder="Amount of currency"
+              required
+            />
+
+            <Pane
+              display="flex"
+              flexDirection="column"
+              marginLeft="8px"
+              marginBottom="24px"
+              width="80px"
+            >
+              <Label marginBottom="8px">Currency:</Label>
+              <SelectMenu
+                title="Select name"
+                options={suportedCurrencies}
+                selected={paymentForm.currency}
+                hasFilter={false}
+                hasTitle={false}
+                onSelect={item =>
+                  setPaymentForm({ ...paymentForm, currency: item })
+                }
+              >
+                <Button>{paymentForm.currency.label}</Button>
+              </SelectMenu>
+            </Pane>
+          </Pane>
+        </Pane>
+        <Pane flex="1 0 0" paddingLeft="16px">
+          <ImagesUploader
+            baseKey={accountPair.address}
+            onImagesUploaded={images => updatePaymentForm('images', images)}
+          />
         </Pane>
       </Pane>
+
       <TextInputField
         label="Payer address"
         value={paymentForm.payer}
@@ -147,7 +146,10 @@ export default function PaymentForm(props) {
         hint="You can specific the address of payer. If not, please leave it empty."
         placeholder="Payer address"
       />
+
       <TextareaField
+        marginRight="16px"
+        inputHeight="120px"
         value={paymentForm.description}
         onInput={e => updatePaymentForm('description', e.target.value)}
         label="Payment description:"
