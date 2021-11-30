@@ -107,6 +107,7 @@ export default function PaymentForm(props) {
               placeholder="Amount of currency"
               required
             />
+
             <Pane
               display="flex"
               flexDirection="column"

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Pane, Button, Dialog, Card, Text } from 'evergreen-ui';
+import { Pane, Button, Dialog, Card, Text, Heading, Code } from 'evergreen-ui';
 import ResolverApplicationForm from './ResolverApplicationForm';
 import ResolverDeletatingConfirmation from './ResolverDeletatingConfirmation';
 import ResolverStatus from '../components/ResolverStatus';
+import CopyableText from '../components/CopyableText';
 
 import { useSubstrate } from '../substrate-lib';
 
 import Resolver from '../utils/models/Resolver';
 
-export default function Governance(props) {
+export default function Resolvers(props) {
   const [resolverIds, setResolverIds] = useState([]);
   const [resolvers, setResolvers] = useState([]);
   const [hasApplicationForm, setHasApplicationForm] = useState(false);
@@ -81,30 +82,38 @@ export default function Governance(props) {
         )}
       </Pane>
 
-      <Pane marginTop={32} display="grid" gridTemplateColumns="1fr 1fr 1fr 1fr">
+      <Pane marginTop={16} display="grid" gridTemplateColumns="1fr 1fr 1fr">
         {resolvers.map(resolver => (
-          <Card maxWidth="480px" elevation="1" padding={16} margin={8}>
-            <Pane>
-              <Text fontWeight={700}>Name: </Text>
-              <Text marginRight={8}>{resolver.name}</Text>
+          <Card maxWidth="480px" elevation="1" padding={32} margin={8}>
+            <Pane display="flex" alignItems="center">
+              <Heading marginRight={8}>{resolver.name}</Heading>
               <ResolverStatus status={resolver.status}></ResolverStatus>
             </Pane>
 
-            <Pane marginTop={8}>
-              <Text fontWeight={700}>Address: </Text>
-              <Text>{shortedAddress(resolver.account)}</Text>
+            <Pane display='flex' marginTop='16px' alignItems='center'>
+              <Pane flex='1 0 0'>
+                <Heading size={400}>Address: </Heading>
+              </Pane>
+              <Pane flex='4 0 0' marginLeft={16}>
+                <CopyableText content={resolver.account}/>
+              </Pane>
             </Pane>
 
-            <Pane marginTop={8}>
-              <Text fontWeight={700}>Application: </Text>
-              <Text>{resolver.application}</Text>
+            <Pane display='flex' marginTop='16px' alignItems='center'>
+              <Pane flex='1 0 0'>
+                <Heading size={400}>Staked: </Heading>
+              </Pane>
+              <Pane flex='4 0 0' marginLeft={8}>
+                <Text size={400}>{resolver.staked} <b>Libra</b></Text>
+              </Pane>
             </Pane>
 
-            <Pane marginTop={8}>
-              <Text fontWeight={700}>Staked: </Text>
-              <Text>{resolver.staked} libra</Text>
-            </Pane>
+            <Pane marginTop={16} borderBottom="solid 1px #E6E8F0" width="100%"></Pane>
 
+            <Pane marginTop={16}>
+              <Heading size={500} marginBottom={8}>About resolver</Heading>
+              <Code background='none' boxShadow='none' whiteSpace='pre-line' padding={0} >{resolver.application}</Code>
+            </Pane>
             <Pane marginTop="16px" display="flex" justifyContent="flex-end">
               {resolver.account !== accountPair.address && (
                 <Button

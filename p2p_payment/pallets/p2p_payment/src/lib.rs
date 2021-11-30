@@ -8,6 +8,7 @@ pub mod pallet {
         dispatch::DispatchResult,
         pallet_prelude::*,
         sp_runtime::traits::Hash,
+        sp_std::if_std,
         sp_std::vec::Vec,
         traits::{
             Currency, ExistenceRequirement, Get, LockIdentifier, LockableCurrency, Randomness,
@@ -103,13 +104,15 @@ pub mod pallet {
 
     #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
     #[scale_info(skip_type_params(T))]
-    pub struct DisputeProposal<T: Config> {
+    pub struct Dispute<T: Config> {
+        pub reason: Vec<u8>,
         pub issuer: AccountOf<T>,
         pub payer: AccountOf<T>,
         pub payee: AccountOf<T>,
         pub resolver: Resolver<T>,
         pub payment_id: T::Hash,
         pub proofs: Vec<DisputeProof<T>>,
+        pub status: DisputeStatus,
     }
 
     #[pallet::pallet]
@@ -151,6 +154,7 @@ pub mod pallet {
         ResolverCreated(T::AccountId),
         ResolverStaked(T::AccountId, BalanceOf<T>),
         ResolverUnstaked(T::AccountId, BalanceOf<T>),
+        DisputeCreated(T::Hash),
         DisputeSolved(T::Hash),
     }
 
@@ -168,6 +172,11 @@ pub mod pallet {
         StorageMap<_, Twox64Concat, T::AccountId, Vec<T::Hash>, ValueQuery>;
 
     #[pallet::storage]
+    #[pallet::getter(fn pay_history)]
+    pub(super) type PayHistory<T: Config> =
+        StorageMap<_, Twox64Concat, AccountOf<T>, Vec<T::Hash>, ValueQuery>;
+
+    #[pallet::storage]
     #[pallet::getter(fn resolvers)]
     pub(super) type Resolvers<T: Config> = StorageMap<_, Twox64Concat, AccountOf<T>, Resolver<T>>;
 
@@ -180,9 +189,18 @@ pub mod pallet {
     pub(super) type ActiveResolversIds<T: Config> = StorageValue<_, Vec<AccountOf<T>>, ValueQuery>;
 
     #[pallet::storage]
-    #[pallet::getter(fn dispute_proposals)]
-    pub(super) type DisputeProposals<T: Config> =
-        StorageMap<_, Twox64Concat, T::Hash, DisputeProposal<T>>;
+    #[pallet::getter(fn disputes)]
+    pub(super) type Disputes<T: Config> = StorageMap<_, Twox64Concat, T::Hash, Dispute<T>>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn involved_disputes)]
+    pub(super) type InvolvedDisputes<T: Config> =
+        StorageMap<_, Twox64Concat, AccountOf<T>, Vec<T::Hash>, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn assigned_disputes)]
+    pub(super) type AssignedDisputes<T: Config> =
+        StorageMap<_, Twox64Concat, AccountOf<T>, Vec<T::Hash>, ValueQuery>;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
@@ -266,6 +284,9 @@ pub mod pallet {
             payment.payer = Some(payer.clone());
 
             <Payments<T>>::insert(&payment_id, payment);
+            <PayHistory<T>>::mutate(&payer, |payment_ids_vec| {
+                payment_ids_vec.push(payment_id);
+            });
 
             Self::deposit_event(Event::PaymentDeposited(payer, payment_id));
             Ok(())
@@ -321,26 +342,61 @@ pub mod pallet {
         }
 
         #[pallet::weight(100)]
-        pub fn dispute_payment(origin: OriginFor<T>, payment_id: T::Hash) -> DispatchResult {
+        pub fn dispute_payment(
+            origin: OriginFor<T>,
+            payment_id: T::Hash,
+            reason: Vec<u8>,
+            description: Vec<u8>,
+            images: Vec<Image>,
+        ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
 
             let mut payment = Self::payments(&payment_id).ok_or(<Error<T>>::PaymentNotExist)?;
 
-            payment.status = PaymentStatus::Disputed;
-            <Payments<T>>::insert(&payment_id, payment.clone());
+            let payer = payment.payer.clone().unwrap();
 
-            let proposal = DisputeProposal::<T> {
-                issuer: sender.clone(),
-                payer: payment.payer.ok_or(<Error<T>>::PayerNotExist)?,
-                payee: payment.payee,
-                payment_id,
-                resolver: Self::get_resolver().ok_or(<Error<T>>::ResolverNotExist)?,
-                proofs: Vec::new(),
+            let is_payment_paticipants = sender == payment.payee || sender == payer;
+            ensure!(is_payment_paticipants, <Error<T>>::AccessDenied);
+
+            let resolver = Self::get_resolver().ok_or(<Error<T>>::ResolverNotExist)?;
+
+            let proof = DisputeProof::<T> {
+                provider: sender.clone(),
+                description,
+                images,
             };
 
-            let proposal_id = T::Hashing::hash_of(&proposal);
+            let mut proofs = Vec::new();
+            proofs.push(proof);
 
-            <DisputeProposals<T>>::insert(&proposal_id, proposal);
+            let dispute = Dispute::<T> {
+                reason,
+                issuer: sender.clone(),
+                payer: payer.clone(),
+                payee: payment.payee.clone(),
+                payment_id,
+                resolver: resolver.clone(),
+                proofs,
+                status: DisputeStatus::Processing,
+            };
+
+            let dispute_id = T::Hashing::hash_of(&dispute);
+
+            <Disputes<T>>::insert(&dispute_id, dispute);
+            <AssignedDisputes<T>>::mutate(&resolver.account, |dispute_ids_vec| {
+                dispute_ids_vec.push(dispute_id.clone());
+            });
+
+            <InvolvedDisputes<T>>::mutate(&payment.payee, |dispute_ids_vec| {
+                dispute_ids_vec.push(dispute_id.clone());
+            });
+
+            <InvolvedDisputes<T>>::mutate(&payer, |dispute_ids_vec| {
+                dispute_ids_vec.push(dispute_id.clone());
+            });
+
+            payment.status = PaymentStatus::Disputed;
+            <Payments<T>>::insert(&payment_id, payment.clone());
 
             Self::deposit_event(Event::PaymentDisputed(sender, payment_id));
             Ok(())
@@ -429,7 +485,7 @@ pub mod pallet {
                 resolver.status = ResolverStatus::Active;
 
                 let mut resolvers_ids = Self::active_resolvers_ids();
-                resolvers_ids.push(sender.clone());
+                resolvers_ids.push(resolver.account.clone());
                 <ActiveResolversIds<T>>::set(resolvers_ids);
             }
 
@@ -459,7 +515,7 @@ pub mod pallet {
         ) -> DispatchResult {
             let provider = ensure_signed(origin)?;
 
-            let mut dispute = Self::dispute_proposals(&dispute_id).ok_or(<Error<T>>::DisputeNotExist)?;
+            let mut dispute = Self::disputes(&dispute_id).ok_or(<Error<T>>::DisputeNotExist)?;
 
             let proof = DisputeProof {
                 provider: provider.clone(),
@@ -469,7 +525,7 @@ pub mod pallet {
 
             dispute.proofs.push(proof);
 
-            <DisputeProposals<T>>::insert(&dispute_id, dispute);
+            <Disputes<T>>::insert(&dispute_id, dispute);
 
             Ok(())
         }
@@ -481,8 +537,23 @@ pub mod pallet {
             winner: AccountOf<T>,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
-            let dispute = Self::dispute_proposals(dispute_id).ok_or(<Error<T>>::DisputeNotExist)?;
 
+            let mut dispute = Self::disputes(dispute_id).ok_or(<Error<T>>::DisputeNotExist)?;
+
+            ensure!(sender == dispute.resolver.account, <Error<T>>::AccessDenied);
+
+            let payment = Self::payments(&dispute.payment_id).ok_or(<Error<T>>::DisputeNotExist)?;
+
+            if winner == dispute.payer {
+                T::Currency::remove_lock(*b"lockerid", &dispute.payer);
+            } else {
+                T::Currency::remove_lock(*b"lockerid", &dispute.payer);
+                T::Currency::transfer(&dispute.payer, &dispute.payee, payment.amount.clone(), ExistenceRequirement::KeepAlive)?;
+            }
+
+            dispute.status = DisputeStatus::Resolved;
+
+            <Disputes<T>>::insert(&dispute_id, dispute);
 
             Self::deposit_event(Event::DisputeSolved(dispute_id));
             Ok(())
@@ -501,6 +572,12 @@ pub mod pallet {
             let random_num = usize::from(random[0]) % active_resolvers_count;
 
             let account = Self::active_resolvers_ids()[random_num].clone();
+
+            if_std! {
+                println!("Number of resolver: {}", &active_resolvers_count);
+                println!("Random num: {}", &random_num);
+                println!("Selected account: {}", &account);
+            }
 
             let resolver = Self::resolvers(&account);
 

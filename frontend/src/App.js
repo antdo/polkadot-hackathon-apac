@@ -24,10 +24,13 @@ export default function App() {
     keyringState === 'READY' &&
     keyring.getPair(accountAddress);
 
-  if (apiState === 'ERROR') return <ErrorMessage message={apiError} />;
+  if (apiState === 'ERROR') {
+    return <ErrorMessage message={apiError} />;
+  }
 
-  if (keyringState !== 'READY' || apiState !== 'READY')
+  if (keyringState !== 'READY' || apiState !== 'READY') {
     return <Loader message="Connecting to the chain..." />;
+  }
 
   return (
     <Pane height="100vh" width="100%" maxWidth="1800px" display="flex">

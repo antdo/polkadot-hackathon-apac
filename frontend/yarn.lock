@@ -10889,6 +10889,47 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"libra@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "libra@workspace:."
+  dependencies:
+    "@babel/core": ^7.14.3
+    "@polkadot/api": ^6.3.1
+    "@polkadot/extension-dapp": ^0.40.3
+    "@polkadot/keyring": ^7.4.1
+    "@polkadot/networks": ^7.4.1
+    "@polkadot/types": ^6.3.1
+    "@polkadot/ui-keyring": ^0.85.4
+    "@polkadot/ui-settings": ^0.85.4
+    "@polkadot/util": ^7.4.1
+    "@polkadot/util-crypto": ^7.4.1
+    babel-preset-env: ^1.7.0
+    eslint: ^7.20.0
+    eslint-config-react-app: ^6.0.0
+    eslint-config-semistandard: ^15.0.1
+    eslint-config-standard: ^16.0.2
+    eslint-plugin-import: ^2.22.1
+    eslint-plugin-node: ^11.1.0
+    eslint-plugin-only-warn: ^1.0.2
+    eslint-plugin-promise: ^4.3.1
+    eslint-plugin-standard: ^5.0.0
+    evergreen-ui: ^6.5.2
+    gh-pages: ^3.1.0
+    prop-types: ^15.7.2
+    query-string: ^6.13.5
+    react: ^17.0.2
+    react-app-rewired: ^2.1.8
+    react-copy-to-clipboard: ^5.0.4
+    react-dom: ^17.0.2
+    react-router-dom: ^5.3.0
+    react-scripts: ^4.0.3
+    select: ^1.1.2
+    semantic-ui-css: ^2.4.1
+    semantic-ui-react: ^2.0.3
+    semistandard: ^16.0.0
+  languageName: unknown
+  linkType: soft
+
 "lines-and-columns@npm:^1.1.6":
   version: 1.1.6
   resolution: "lines-and-columns@npm:1.1.6"
@@ -16002,47 +16043,6 @@ resolve@^2.0.0-next.3:
   checksum: 8acf28ea609bee6d7ba40121bcf53af8d899c1ec04f2c08de9349b8292b84b8aa7f82e14c623ae6956decf5b7a7eeea5472ab8e48de7bdcdb6d76640444f6753
   languageName: node
   linkType: hard
-
-"substrate-front-end-template@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "substrate-front-end-template@workspace:."
-  dependencies:
-    "@babel/core": ^7.14.3
-    "@polkadot/api": ^6.3.1
-    "@polkadot/extension-dapp": ^0.40.3
-    "@polkadot/keyring": ^7.4.1
-    "@polkadot/networks": ^7.4.1
-    "@polkadot/types": ^6.3.1
-    "@polkadot/ui-keyring": ^0.85.4
-    "@polkadot/ui-settings": ^0.85.4
-    "@polkadot/util": ^7.4.1
-    "@polkadot/util-crypto": ^7.4.1
-    babel-preset-env: ^1.7.0
-    eslint: ^7.20.0
-    eslint-config-react-app: ^6.0.0
-    eslint-config-semistandard: ^15.0.1
-    eslint-config-standard: ^16.0.2
-    eslint-plugin-import: ^2.22.1
-    eslint-plugin-node: ^11.1.0
-    eslint-plugin-only-warn: ^1.0.2
-    eslint-plugin-promise: ^4.3.1
-    eslint-plugin-standard: ^5.0.0
-    evergreen-ui: ^6.5.2
-    gh-pages: ^3.1.0
-    prop-types: ^15.7.2
-    query-string: ^6.13.5
-    react: ^17.0.2
-    react-app-rewired: ^2.1.8
-    react-copy-to-clipboard: ^5.0.4
-    react-dom: ^17.0.2
-    react-router-dom: ^5.3.0
-    react-scripts: ^4.0.3
-    select: ^1.1.2
-    semantic-ui-css: ^2.4.1
-    semantic-ui-react: ^2.0.3
-    semistandard: ^16.0.0
-  languageName: unknown
-  linkType: soft
 
 "supports-color@npm:^2.0.0":
   version: 2.0.0

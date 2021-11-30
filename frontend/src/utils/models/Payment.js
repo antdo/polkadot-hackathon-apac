@@ -11,7 +11,7 @@ const Payment = (id, data) => ({
     proof: image.proof,
     url: Buffer.from(image.url, 'base64').toString('utf-8'),
   })),
-  payer: data.payer.toJSON(),
+  payer: data.payer.toString() !== '5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM' ? data.payer.toString() : '',
   payee: data.payee.toJSON(),
   updatedAt: data.createdAtHash.toHuman(),
   status: data.status.toHuman(),

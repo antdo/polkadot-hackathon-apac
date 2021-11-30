@@ -8,26 +8,59 @@ import {
   Code,
   toaster,
   TextInputField,
+  TextareaField,
   SelectField,
-  CornerDialog,
+  Dialog,
 } from 'evergreen-ui';
 import { useParams } from 'react-router';
 import PaymentStatus from '../components/PaymentStatus';
+import ImagesUploader from '../components/ImagesUploader';
 
 import { useSubstrate } from '../substrate-lib';
 import PaymentModel from '../utils/models/Payment';
 import { getFromAcct } from '../utils/tx';
+import isValidAddress from '../utils/isValidAddress';
 
 export default function ProcessPayment(props) {
   const { id } = useParams();
-  const { accountPair } = props;
 
   const [payment, setPayment] = useState(null);
   const [isDepositing, setIsDepositing] = useState(false);
   const [isReleasing, setIsReleasing] = useState(false);
   const [isDisputing, setIsDisputing] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState('');
+  const [accountPair, setAccountPair] = useState(null);
 
-  const { api } = useSubstrate();
+  const [disputeFormShowed, setIsDisputeFormShowed] = useState(false);
+  const [disputeFormData, setDisputeFormData] = useState({
+    paymentId: id,
+    reason: '',
+    description: '',
+    images: [],
+  });
+
+  const { api, keyring } = useSubstrate();
+
+  const options = keyring.getPairs().map(account => ({
+    address: account.address,
+    name: account.meta.name,
+  }));
+
+  useEffect(() => {
+    setSelectedAccount(options[0].address);
+  }, []);
+
+  useEffect(() => {
+    if (payment && payment.payer) {
+      setSelectedAccount(payment.payer);
+    }
+  }, [payment]);
+
+  useEffect(() => {
+    if (selectedAccount && !!options.find(item => item.address === selectedAccount)) {
+      setAccountPair(keyring.getPair(selectedAccount));
+    }
+  }, [selectedAccount]);
 
   const subscribePayment = () => {
     let unsub = null;
@@ -49,7 +82,6 @@ export default function ProcessPayment(props) {
 
   const depositPayment = async () => {
     setIsDepositing(true);
-
     try {
       const { fromAcct, signer } = await getFromAcct(accountPair);
       if (signer) {
@@ -74,6 +106,7 @@ export default function ProcessPayment(props) {
         });
     } catch (err) {
       toaster.danger(`😞 Failed: ${err.message}`);
+      setIsDepositing(false);
     }
   };
 
@@ -104,6 +137,7 @@ export default function ProcessPayment(props) {
         });
     } catch (err) {
       toaster.danger(`😞 Failed: ${err.message}`);
+      setIsReleasing(false);
     }
   };
 
@@ -117,23 +151,34 @@ export default function ProcessPayment(props) {
       }
 
       api.tx.p2PPayment
-        .disputePayment(payment.id)
-        .signAndSend(fromAcct, ({ status }) => {
+        .disputePayment(
+          payment.id,
+          Buffer.from(disputeFormData.reason, 'utf-8').toString('base64'),
+          Buffer.from(disputeFormData.description, 'utf-8').toString('base64'),
+          disputeFormData.images.map(item => ({
+            ...item,
+            url: Buffer.from(item.url, 'utf-8').toString('base64'),
+          })),
+        )
+        .signAndSend(fromAcct, ({ status, events, dispatchError }) => {
           if (status.isFinalized) {
             toaster.success(
-              `😉 Transaction finalized. Block hash: ${status.asFinalized.toString()}`
+              `Dispute the payment successfully. Block hash: ${status.asFinalized.toString()}`
             );
-            setIsReleasing(false);
+            setIsDisputing(false);
+            setIsDisputeFormShowed(false);
           } else {
             toaster.notify(`Current transaction status: ${status.type}`);
+            toaster.notify(`Current transaction status: ${status.toString()}`);
           }
         })
         .catch(err => {
-          toaster.danger(`😞 Transaction Failed: ${err.toString()}`);
-          setIsReleasing(false);
+          toaster.danger(`Fail to dispute the payment: ${err.toString()}`);
+          setIsDisputing(false);
         });
     } catch (err) {
       toaster.danger(`😞 Failed: ${err.message}`);
+      setIsDisputing(false);
     }
   };
 
@@ -182,8 +227,6 @@ export default function ProcessPayment(props) {
     );
   }
 
-  console.log(payment);
-
   return (
     <Pane
       position="fixed"
@@ -222,9 +265,7 @@ export default function ProcessPayment(props) {
             </Pane>
           </Pane>
           <Pane borderTop="solid 1px #c1c4d6" marginTop={16} paddingTop={16}>
-            <Heading size={500}>
-              About this payment
-            </Heading>
+            <Heading size={500}>About this payment</Heading>
             <Pane marginTop={16}>
               <Code size={300} appearance="minimal" whiteSpace="pre-wrap">
                 {payment.description}
@@ -236,7 +277,7 @@ export default function ProcessPayment(props) {
       <Pane
         flex="1 0 0"
         background="white"
-        elevation="1"
+        elevation={1}
         paddingLeft={48}
         paddingY={96}
       >
@@ -275,13 +316,15 @@ export default function ProcessPayment(props) {
             <SelectField
               label="Pay with"
               description="Select the wallet that use to pay"
+              value={selectedAccount}
+              onChange={e => setSelectedAccount(e.target.value)}
+              disabled={isValidAddress(payment.payer)}
             >
-              <option value="foo" selected>
-                5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-              </option>
-              <option value="bar">
-                5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-              </option>
+              {options.map(option => (
+                <option key={option.address} value={option.address}>
+                  {option.name}
+                </option>
+              ))}
             </SelectField>
           </Pane>
 
@@ -300,7 +343,7 @@ export default function ProcessPayment(props) {
 
             {payment.status === 'Deposited' && (
               <Button
-                onClick={disputePayment}
+                onClick={() => setIsDisputeFormShowed(true)}
                 isLoading={isDisputing}
                 disabled={isDisputing || isReleasing}
                 size="medium"
@@ -326,6 +369,52 @@ export default function ProcessPayment(props) {
           </Pane>
         </Pane>
       </Pane>
+      <Dialog
+        isShown={disputeFormShowed}
+        title="Dispute payment"
+        hasFooter={false}
+        onCloseComplete={() => setIsDisputeFormShowed(false)}
+        shouldCloseOnOverlayClick={false}
+      >
+          <TextInputField
+            label="Dispute reason"
+            placeholder="Dispute reason"
+            value={disputeFormData.reason}
+            onInput={e => setDisputeFormData({ ...disputeFormData, reason: e.target.value })}
+            required
+          />
+
+          <Pane display='flex' justifyContent='space-between'>
+            <Pane flexGrow='1'>
+              <TextareaField
+                marginRight="16px"
+                inputHeight="120px"
+                value={disputeFormData.description}
+                onInput={e => setDisputeFormData({ ...disputeFormData, description: e.target.value })}
+                label="Proof description:"
+                description="Please describe the proof of dispute"
+                required
+              />
+            </Pane>
+            
+            <Pane height={160} width={160} marginTop={8}>
+              <ImagesUploader
+                baseKey={accountPair.address}
+                onImagesUploaded={images => setDisputeFormData({ ...disputeFormData, images })}
+              />
+            </Pane>
+          </Pane>
+          <Pane marginY={16} display='flex' justifyContent='flex-end'>
+            <Button onClick={() => { setIsDisputeFormShowed(false) }}>Discard</Button>
+            <Button
+              appearance='primary'
+              marginLeft={8}
+              isLoading={isDisputing}
+              disabled={isDisputing}
+              onClick={() => disputePayment()}
+            >Submit dispute</Button>
+          </Pane>
+      </Dialog>
     </Pane>
   );
 }
