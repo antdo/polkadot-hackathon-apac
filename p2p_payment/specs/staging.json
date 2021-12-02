@@ -18,18 +18,19 @@
       },
       "aura": {
         "authorities": [
-          "5D5Fr72WpTz7pqeNMcyf32FGxPmG7SdDK31x5UjvjjsAMr4F",
-          "5Gp9vSY8refU3ibMwySFEYB5p2RfXd6xBvvyVkVtVNYin7x1"
+          "5GWeq3dqEp4gzZS8jnEzTdTtPYxAp4AMcvjdhJdse4nU8zb2",
+          "5CmH1nKLGTL8wN4pMc6Bn6dpMq2HryEQsYHwieUMuSrmMmk8",
+          "5GTFEe5i95urqLz1TzL6NTqRrAdhPe3z96D9qq3o2EDBnXct"
         ]
       },
       "grandpa": {
         "authorities": [
           [
-            "5CuqCGfwqhjGzSqz5mnq36tMe651mU9Ji8xQ4JRuUTvPcjVN",
+            "5GZ1PJL1KE4UDRp8yB3pKnxuzroH5xwy6uChYrocoSB9CjKh",
             1
           ],
           [
-            "5ENsx5KvVNnqWApuhFNAcTfLkoMEp19XoQ7HqAaxH69E57bW",
+            "5GAUECUNn4aKFkKxPVq5eLPCapAC7yGr516dwve4oNPKGDKx",
             1
           ]
         ]
@@ -37,17 +38,25 @@
       "balances": {
         "balances": [
           [
-            "5D5Fr72WpTz7pqeNMcyf32FGxPmG7SdDK31x5UjvjjsAMr4F",
-            1152921504606846976
+            "5GWeq3dqEp4gzZS8jnEzTdTtPYxAp4AMcvjdhJdse4nU8zb2",
+            111529215046068469760
           ],
           [
-            "5Gp9vSY8refU3ibMwySFEYB5p2RfXd6xBvvyVkVtVNYin7x1",
-            1152921504606846976
+            "5CmH1nKLGTL8wN4pMc6Bn6dpMq2HryEQsYHwieUMuSrmMmk8",
+            11529215046068469760
+          ],
+          [
+            "5GTFEe5i95urqLz1TzL6NTqRrAdhPe3z96D9qq3o2EDBnXct",
+            11529215046068469760
+          ],
+          [
+            "5ERjkQVj8M7v5UVZQ8qTbZ2qb1o5TgNXq9tXt2BsWF9jBpDu",
+            11529215046068469760
           ]
         ]
       },
       "sudo": {
-        "key": "5D5Fr72WpTz7pqeNMcyf32FGxPmG7SdDK31x5UjvjjsAMr4F"
+        "key": "5GWeq3dqEp4gzZS8jnEzTdTtPYxAp4AMcvjdhJdse4nU8zb2"
       },
       "p2pPayment": {
         "resolvers": []
