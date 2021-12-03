@@ -1,9 +1,6 @@
-apt update && apt install -y git clang curl libssl-dev llvm libudev-dev
-
+sudo apt update && sudo apt install -y git clang curl libssl-dev llvm libudev-dev
 curl https://sh.rustup.rs -sSf | sh
-
 source ~/.cargo/env
-
 rustup default stable
 rustup update
 

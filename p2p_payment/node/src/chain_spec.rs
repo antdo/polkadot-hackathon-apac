@@ -42,10 +42,10 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 pub fn development_config() -> Result<ChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
-		let mut props: Properties = Properties::new();
+		let mut properties: Properties = Properties::new();
 
-    let value = json!("libra");
-    props.insert("tokenSymbol".to_string(), value);
+    properties.insert("tokenSymbol".to_string(), json!("LIBRA"));
+		properties.insert("tokenDecimals".to_string(), json!("12"));
 
     Ok(ChainSpec::from_genesis(
         // Name
@@ -77,7 +77,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Protocol ID
         None,
         // Properties
-        Some(props),
+        Some(properties),
         // Extensions
         None,
     ))
@@ -86,10 +86,10 @@ pub fn development_config() -> Result<ChainSpec, String> {
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
-    let mut props: Properties = Properties::new();
+		let mut properties: Properties = Properties::new();
 
-    let value = json!("libra");
-    props.insert("tokenSymbol".to_string(), value);
+    properties.insert("tokenSymbol".to_string(), json!("LIBRA"));
+		properties.insert("tokenDecimals".to_string(), json!("12"));
 
     Ok(ChainSpec::from_genesis(
         // Name
@@ -132,7 +132,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Protocol ID
         None,
         // Properties
-        Some(props),
+        Some(properties),
         // Extensions
         None,
     ))

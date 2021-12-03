@@ -171,6 +171,9 @@ version = '4.0.0-dev'
 default-features = false
 version = '1.0.68'
 
+[dependencies.hex-literal]
+version = '0.3.1'
+
 [features]
 default = []
 runtime-benchmarks = ['node-p2p_payment-runtime/runtime-benchmarks']
