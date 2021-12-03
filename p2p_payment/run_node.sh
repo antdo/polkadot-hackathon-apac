@@ -1,17 +1,3 @@
-yum update && yum install -y git clang curl libssl-dev llvm libudev-dev
-
-curl https://sh.rustup.rs -sSf | sh
-
-source ~/.cargo/env
-
-rustup default stable
-rustup update
-
-rustup update nightly
-rustup target add wasm32-unknown-unknown --toolchain nightly
-
-cargo build --release
-
 ./target/release/node-p2p_payment key insert \
 --chain="./specs/stagingRaw.json" \
 --base-path=$BASE_PATH \
