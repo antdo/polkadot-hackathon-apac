@@ -25,8 +25,7 @@
       "aura": {
         "authorities": [
           "5GWeq3dqEp4gzZS8jnEzTdTtPYxAp4AMcvjdhJdse4nU8zb2",
-          "5CmH1nKLGTL8wN4pMc6Bn6dpMq2HryEQsYHwieUMuSrmMmk8",
-          "5GTFEe5i95urqLz1TzL6NTqRrAdhPe3z96D9qq3o2EDBnXct"
+          "5CmH1nKLGTL8wN4pMc6Bn6dpMq2HryEQsYHwieUMuSrmMmk8"
         ]
       },
       "grandpa": {
@@ -37,10 +36,6 @@
           ],
           [
             "5GAUECUNn4aKFkKxPVq5eLPCapAC7yGr516dwve4oNPKGDKx",
-            1
-          ],
-          [
-            "5D2oR6VvVHCEvb4RGkUPjqakGZwb8nh8xBxHCwby6Uobcfvc",
             1
           ]
         ]
@@ -66,7 +61,7 @@
         ]
       },
       "sudo": {
-        "key": "5GZ1PJL1KE4UDRp8yB3pKnxuzroH5xwy6uChYrocoSB9CjKh"
+        "key": "5GWeq3dqEp4gzZS8jnEzTdTtPYxAp4AMcvjdhJdse4nU8zb2"
       },
       "p2pPayment": {
         "resolvers": []
