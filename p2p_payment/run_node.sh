@@ -1,0 +1,11 @@
+./target/release/node-p2p_payment \
+--chain="./specs/stagingRaw.json" \
+--name $NODE_NAME \
+--port 30333 \
+--ws-port 9944 \
+--rpc-port 9933 \
+--rpc-cors all \
+--rpc-methods Unsafe \
+--validator \
+--base-path=$BASE_PATH \
+--bootnodes $BOOT_NODES
