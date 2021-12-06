@@ -67,7 +67,7 @@ export default function ProcessPayment(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.payments(id, payment => {
+      unsub = await api.query.p2pPayment.payments(id, payment => {
         setPayment(PaymentModel(id, payment.value));
       });
     };
@@ -89,7 +89,7 @@ export default function ProcessPayment(props) {
         api.setSigner(signer);
       }
 
-      api.tx.p2PPayment
+      api.tx.p2pPayment
         .depositPayment(payment.id)
         .signAndSend(fromAcct, ({ status }) => {
           if (status.isFinalized) {
@@ -120,7 +120,7 @@ export default function ProcessPayment(props) {
         api.setSigner(signer);
       }
 
-      api.tx.p2PPayment
+      api.tx.p2pPayment
         .completePayment(payment.id)
         .signAndSend(fromAcct, ({ status }) => {
           if (status.isFinalized) {
@@ -151,7 +151,7 @@ export default function ProcessPayment(props) {
         api.setSigner(signer);
       }
 
-      api.tx.p2PPayment
+      api.tx.p2pPayment
         .disputePayment(
           payment.id,
           Buffer.from(disputeFormData.reason, 'utf-8').toString('base64'),
@@ -182,36 +182,6 @@ export default function ProcessPayment(props) {
       setIsDisputing(false);
     }
   };
-
-  // const cancelPayment = async () => {
-  //   setIsCancelling(true);
-
-  //   try {
-  //     const { fromAcct, signer } = await getFromAcct(accountPair);
-  //     if (signer) {
-  //       api.setSigner(signer);
-  //     }
-
-  //     api.tx.p2PPayment
-  //       .cancelPayment(payment.id)
-  //       .signAndSend(fromAcct, ({ status }) => {
-  //         if (status.isFinalized) {
-  //           toaster.success(
-  //             `😉 Transaction finalized. Block hash: ${status.asFinalized.toString()}`
-  //           );
-  //           setIsCancelling(false);
-  //         } else {
-  //           toaster.notify(`Current transaction status: ${status.type}`);
-  //         }
-  //       })
-  //       .catch(err => {
-  //         toaster.danger(`😞 Transaction Failed: ${err.toString()}`);
-  //         setIsCancelling(false);
-  //       });
-  //   } catch (err) {
-  //     toaster.danger(`😞 Failed: ${err.message}`);
-  //   }
-  // };
 
   if (!payment) {
     return (

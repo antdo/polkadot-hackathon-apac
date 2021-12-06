@@ -34,7 +34,7 @@ export default function Disputes(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.assignedDisputes(accountPair.address, ids => {
+      unsub = await api.query.p2pPayment.assignedDisputes(accountPair.address, ids => {
         setDisputeIds(ids.toJSON());
       });
     };
@@ -52,7 +52,7 @@ export default function Disputes(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.disputes.multi(disputeIds, (items) => {
+      unsub = await api.query.p2pPayment.disputes.multi(disputeIds, (items) => {
         setDisputes(items.map((dispute, index) => {
           return Dispute(disputeIds[index], dispute.value);
         }));
@@ -70,7 +70,7 @@ export default function Disputes(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.involvedDisputes(accountPair.address, ids => {
+      unsub = await api.query.p2pPayment.involvedDisputes(accountPair.address, ids => {
         setInvolvedDisputeIds(ids.toJSON());
       });
     };
@@ -88,7 +88,7 @@ export default function Disputes(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.disputes.multi(involvedDisputeIds, (items) => {
+      unsub = await api.query.p2pPayment.disputes.multi(involvedDisputeIds, (items) => {
         setInvolvedDisputes(items.map((dispute, index) => {
           return Dispute(involvedDisputeIds[index], dispute.value);
         }));

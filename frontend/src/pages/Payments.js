@@ -50,7 +50,6 @@ export default function Payments(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      console.log('API Query:', api.query);
       unsub = await api.query.p2pPayment.payments.multi(paymentIds, items => {
         const paymentArr = items.map((payment, index) => {
           return PaymentModel(paymentIds[index], payment.value);
@@ -102,6 +101,7 @@ export default function Payments(props) {
         </Tablist>
         <Pane background="tint1" flex="1">
           <PaymentsTable
+            accountPair={accountPair}
             height={window.innerHeight - 164}
             payments={renderedPayments()}
           ></PaymentsTable>

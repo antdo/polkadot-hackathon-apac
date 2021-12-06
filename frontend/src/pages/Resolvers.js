@@ -23,7 +23,7 @@ export default function Resolvers(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.allResolvers(ids => {
+      unsub = await api.query.p2pPayment.allResolvers(ids => {
         setResolverIds(ids.toJSON());
       });
     };
@@ -39,7 +39,7 @@ export default function Resolvers(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.resolvers.multi(resolverIds, items => {
+      unsub = await api.query.p2pPayment.resolvers.multi(resolverIds, items => {
         const resolversArr = items.map(resolver => {
           return Resolver(resolver.value);
         });
@@ -84,7 +84,7 @@ export default function Resolvers(props) {
 
       <Pane marginTop={16} display="grid" gridTemplateColumns="1fr 1fr 1fr">
         {resolvers.map(resolver => (
-          <Card maxWidth="480px" elevation="1" padding={32} margin={8}>
+          <Card maxWidth="480px" key={resolver.account} elevation={1} padding={32} margin={8}>
             <Pane display="flex" alignItems="center">
               <Heading marginRight={8}>{resolver.name}</Heading>
               <ResolverStatus status={resolver.status}></ResolverStatus>

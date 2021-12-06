@@ -23,7 +23,7 @@ export default function ResolverDeletatingConfirmation(props) {
         api.setSigner(signer);
       }
 
-      api.tx.p2PPayment
+      api.tx.p2pPayment
         .stakeToResolver(
           resolver.account,
           `${Number.parseInt(amount * 10 ** 12)}`
