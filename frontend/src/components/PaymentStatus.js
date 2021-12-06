@@ -3,7 +3,7 @@ import { Badge } from 'evergreen-ui';
 
 export default function PaymentStatus({ status }) {
   if (status === 'WaitingForDeposit') {
-    return <Badge color="purple">Waiting For Deposit</Badge>;
+    return <Badge color="purple">Waiting</Badge>;
   }
 
   if (status === 'Deposited') {

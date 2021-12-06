@@ -39,7 +39,7 @@ export default function PaymentForm(props) {
         api.setSigner(signer);
       }
 
-      api.tx.p2PPayment
+      api.tx.p2pPayment
         .applyToBeResolver(
           Buffer.from(form.name, 'utf-8').toString('base64'),
           Buffer.from(form.application, 'utf-8').toString('base64')

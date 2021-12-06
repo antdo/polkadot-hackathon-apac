@@ -58,7 +58,7 @@ export default function DisputeDetail(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.disputes(disputeId, data => {
+      unsub = await api.query.p2pPayment.disputes(disputeId, data => {
         setDispute(Dispute(disputeId, data.value));
       });
     };
@@ -76,7 +76,7 @@ export default function DisputeDetail(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.payments(dispute.paymentId, paymentData => {
+      unsub = await api.query.p2pPayment.payments(dispute.paymentId, paymentData => {
         setPayment(Payment(dispute.paymentId, paymentData.value));
       });
     };
@@ -102,7 +102,7 @@ export default function DisputeDetail(props) {
         api.setSigner(signer);
       }
 
-      api.tx.p2PPayment
+      api.tx.p2pPayment
         .submitProof(
           disputeId,
           Buffer.from(proofForm.description, 'utf-8').toString('base64'),
@@ -145,7 +145,7 @@ export default function DisputeDetail(props) {
         api.setSigner(signer);
       }
 
-      api.tx.p2PPayment
+      api.tx.p2pPayment
         .solveDispute(
           disputeId,
           selectedWinner

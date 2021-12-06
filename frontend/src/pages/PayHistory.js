@@ -20,7 +20,7 @@ export default function Payments(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.payHistory(
+      unsub = await api.query.p2pPayment.payHistory(
         accountPair.address,
         paymentHashes => {
           setPaymentIds(paymentHashes.toJSON());
@@ -41,7 +41,7 @@ export default function Payments(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.payments.multi(paymentIds, items => {
+      unsub = await api.query.p2pPayment.payments.multi(paymentIds, items => {
         const paymentArr = items.map((payment, index) => {
           return PaymentModel(paymentIds[index], payment.value);
         });

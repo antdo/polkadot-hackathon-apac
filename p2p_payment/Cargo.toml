@@ -1,9 +1,0 @@
-[profile.release]
-panic = 'unwind'
-
-[workspace]
-members = [
-    'node',
-    'pallets/p2p_payment',
-    'runtime',
-]

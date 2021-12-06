@@ -1,5 +1,5 @@
 {
-  "APP_NAME": "libra",
-  "DEVELOPMENT_KEYRING": true,
+  "APP_NAME": "Libra",
+  "DEVELOPMENT_KEYRING": false,
   "RPC": {}
 }

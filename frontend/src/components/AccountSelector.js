@@ -16,13 +16,14 @@ export default function AccountSelector(props) {
   const [selectedAccount, setSelectedAccount] = useState({});
   const { onAccountSelected } = props;
 
+
   const keyringOptions = keyring.getPairs().map(account => ({
     address: account.address,
     name: account.meta.name.toUpperCase(),
   }));
 
   useEffect(() => {
-    if (!selectedAccount.key) {
+    if (!selectedAccount.key && keyringOptions[0]) {
       selectAccount(keyringOptions[0]);
     }
   }, []);

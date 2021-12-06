@@ -96,7 +96,6 @@ const loadAccounts = (state, dispatch) => {
       keyring.loadAll({ isDevelopment: config.DEVELOPMENT_KEYRING }, allAccounts);
       dispatch({ type: 'SET_KEYRING', payload: keyring });
     } catch (e) {
-      console.error(e);
       dispatch({ type: 'KEYRING_ERROR' });
     }
   };
@@ -123,6 +122,7 @@ const SubstrateContextProvider = (props) => {
   });
 
   const [state, dispatch] = useReducer(reducer, initState);
+
   connect(state, dispatch);
   loadAccounts(state, dispatch);
 
