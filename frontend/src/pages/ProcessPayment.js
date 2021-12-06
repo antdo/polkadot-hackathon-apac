@@ -20,6 +20,7 @@ import { useSubstrate } from '../substrate-lib';
 import PaymentModel from '../utils/models/Payment';
 import { getFromAcct } from '../utils/tx';
 import isValidAddress from '../utils/isValidAddress';
+import Loader from '../components/Loader';
 
 export default function ProcessPayment(props) {
   const { id } = useParams();
@@ -214,16 +215,7 @@ export default function ProcessPayment(props) {
 
   if (!payment) {
     return (
-      <Pane
-        width="100%"
-        height={window.innerHeight - 160}
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Spinner size={24} marginRight={8}></Spinner>
-        <Text>Loading the payemnt infomation</Text>
-      </Pane>
+      <Loader message="Loading the payment..."/>
     );
   }
 

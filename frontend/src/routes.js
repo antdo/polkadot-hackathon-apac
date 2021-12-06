@@ -28,6 +28,8 @@ export default [
     icon: HomeIcon,
     exact: true,
     sidebarExcluded: true,
+    noSidebar: true,
+    noTopbar: true,
     component: ProcessPayment,
   },
   {

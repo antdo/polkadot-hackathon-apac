@@ -10,6 +10,8 @@ export default function Loader(props = {}) {
       display="flex"
       alignItems="center"
       justifyContent="center"
+      top="0"
+      left="0"
     >
       <Spinner size={24} marginRight="8px" />
       {props.message ? <Text>{props.message}</Text> : ''}

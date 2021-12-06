@@ -89,10 +89,12 @@ const loadAccounts = (state, dispatch) => {
   const asyncLoadAccounts = async () => {
     dispatch({ type: 'LOAD_KEYRING' });
     try {
+      console.log('App name:', config.APP_NAME)
       await web3Enable(config.APP_NAME);
       let allAccounts = await web3Accounts();
       allAccounts = allAccounts.map(({ address, meta }) =>
         ({ address, meta: { ...meta, name: `${meta.name} (${meta.source})` } }));
+      console.log('All accounts: ', allAccounts);
       keyring.loadAll({ isDevelopment: config.DEVELOPMENT_KEYRING }, allAccounts);
       dispatch({ type: 'SET_KEYRING', payload: keyring });
     } catch (e) {
@@ -123,8 +125,11 @@ const SubstrateContextProvider = (props) => {
   });
 
   const [state, dispatch] = useReducer(reducer, initState);
+
   connect(state, dispatch);
   loadAccounts(state, dispatch);
+
+  console.log('Substrate context: ', state);
 
   return <SubstrateContext.Provider value={state}>
     {props.children}

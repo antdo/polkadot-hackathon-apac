@@ -29,7 +29,7 @@ export default function Payments(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.paymentsOwned(
+      unsub = await api.query.p2pPayment.paymentsOwned(
         accountPair.address,
         paymentHashes => {
           setPaymentIds(paymentHashes.toJSON());
@@ -50,7 +50,8 @@ export default function Payments(props) {
     let unsub = null;
 
     const asyncFetch = async () => {
-      unsub = await api.query.p2PPayment.payments.multi(paymentIds, items => {
+      console.log('API Query:', api.query);
+      unsub = await api.query.p2pPayment.payments.multi(paymentIds, items => {
         const paymentArr = items.map((payment, index) => {
           return PaymentModel(paymentIds[index], payment.value);
         });
