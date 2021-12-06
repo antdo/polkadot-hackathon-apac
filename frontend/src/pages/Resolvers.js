@@ -150,7 +150,7 @@ export default function Resolvers(props) {
 
       <Dialog
         isShown={hasApplicationForm}
-        title="Create Payment"
+        title="Resolver Application"
         hasFooter={false}
         onCloseComplete={() => setHasApplicationForm(false)}
         shouldCloseOnOverlayClick={false}
