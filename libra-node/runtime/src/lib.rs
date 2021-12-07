@@ -275,7 +275,8 @@ impl pallet_sudo::Config for Runtime {
 
 parameter_types! {
 	pub const ResolverInitialAmount: Balance = 100_000_000_000_000_000;
-	pub const ResolverActiveRequiredAmount: Balance = 500_000_000_000_000_000;
+	pub const ResolverActiveRequiredAmount: Balance = 200_000_000_000_000_000;
+	pub const FaucetAmount: Balance = 200_000_000_000_000_000;
 }
 
 /// Configure the pallet-p2p_payment in pallets/p2p_payment.
@@ -285,6 +286,7 @@ impl pallet_p2p_payment::Config for Runtime {
 	type ResolverRandomness = RandomnessCollectiveFlip;
 	type ResolverInitialAmount = ResolverInitialAmount;
 	type ResolverActiveRequiredAmount = ResolverActiveRequiredAmount;
+	type FaucetAmount = FaucetAmount;
 }
 
 

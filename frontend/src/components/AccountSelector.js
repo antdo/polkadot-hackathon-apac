@@ -7,6 +7,7 @@ import {
   Position,
   CaretDownIcon,
   Text,
+  Heading,
 } from 'evergreen-ui';
 
 import { useSubstrate } from '../substrate-lib';
@@ -34,12 +35,12 @@ export default function AccountSelector(props) {
     close && close();
   };
 
-  const shortedAddress = () => {
+  const shortedAddress = (startChars = 6, endChars = 4) => {
     if (selectedAccount && selectedAccount.address) {
       return `${selectedAccount.address.slice(
         0,
-        6
-      )}...${selectedAccount.address.slice(-4)}`;
+        startChars
+      )}...${selectedAccount.address.slice(-endChars)}`;
     }
 
     return '';
@@ -64,8 +65,9 @@ export default function AccountSelector(props) {
       >
         <Pane display="flex" alignItems="center">
           <Avatar name={(selectedAccount.name || '').split('(')[0]} size={40}></Avatar>
-          <Pane display="flex" alignItems="center" marginLeft="16px">
-            <Text>{shortedAddress()}</Text>
+          <Pane display="flex" justifyContent="center" flexDirection="column" alignItems="flex-start" marginLeft="16px">
+            <Heading size={300}>{(selectedAccount.name || '').replace(' (POLKADOT-JS)', '')}</Heading>
+            <Text size={300}>{shortedAddress(6, 6)}</Text>
           </Pane>
           <CaretDownIcon marginLeft="8px"></CaretDownIcon>
         </Pane>

@@ -88,7 +88,7 @@ export default function PaymentForm(props) {
         <Pane flexGrow="1">
           <TextareaField
             marginRight="16px"
-            inputHeight="120px"
+            inputHeight={120}
             value={formData.description}
             onInput={e => updateFormData('description', e.target.value)}
             label="Proof description:"

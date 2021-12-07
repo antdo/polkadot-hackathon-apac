@@ -10,7 +10,6 @@ const INVOLVED_DISPUTES = 'Involved Disputes';
 const ASIGNED_DISPUTES = 'Assigned Disputes';
 
 function DisputeStatus({ status }) {
-  console.log(status)
   if (status === 'Resolved') {
     return <Badge color="green">Resolved</Badge>;
   }
@@ -103,9 +102,9 @@ export default function Disputes(props) {
   };
 
   useEffect(subscribeDisputeIds, [accountPair]);
-  useEffect(subscribeDisputes, [disputeIds]);
+  useEffect(subscribeDisputes, [disputeIds, selectedTab]);
   useEffect(subscribeInvolvedDisputeIds, [accountPair]);
-  useEffect(subscribeInvolvedDisputes, [disputeIds]);
+  useEffect(subscribeInvolvedDisputes, [disputeIds, selectedTab]);
 
   const renderedDisputes = selectedTab === ASIGNED_DISPUTES ? disputes : involvedDisputes;
 

@@ -129,6 +129,8 @@ pub mod pallet {
         type ResolverInitialAmount: Get<BalanceOf<Self>>;
         #[pallet::constant]
         type ResolverActiveRequiredAmount: Get<BalanceOf<Self>>;
+				#[pallet::constant]
+        type FaucetAmount: Get<BalanceOf<Self>>;
     }
 
     #[pallet::error]
@@ -558,6 +560,13 @@ pub mod pallet {
             Self::deposit_event(Event::DisputeSolved(dispute_id));
             Ok(())
         }
+
+				#[pallet::weight((0, DispatchClass::Normal, Pays::No))]
+				pub fn faucet(origin: OriginFor<T>) -> DispatchResult {
+					let sender = ensure_signed(origin)?;
+					T::Currency::deposit_creating(&sender, T::FaucetAmount::get());
+					Ok(())
+				}
     }
 
     impl<T: Config> Pallet<T> {

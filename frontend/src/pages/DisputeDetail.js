@@ -215,7 +215,7 @@ export default function DisputeDetail(props) {
             </Pane>
           </Pane>
           <Pane flex='1 0 0' display="flex" alignItems="center">
-            { payment.images[0] && <img width='100%' maxWidth='100%' src={payment.images[0].url}></img>}
+            { payment.images[0] && <img width='100%' style={{ maxWidth: '100%', maxHeight: '100%' }} src={payment.images[0].url}></img>}
           </Pane>
         </Pane>
         <Pane marginTop={16} borderBottom="solid 1px #E6E8F0" width="100%"></Pane>
@@ -263,7 +263,7 @@ export default function DisputeDetail(props) {
             <Pane flexGrow='1'>
               <TextareaField
                 marginRight="16px"
-                inputHeight="120px"
+                inputHeight={120}
                 value={proofForm.description}
                 onInput={e => setProofForm({ ...proofForm, description: e.target.value })}
                 label="Add information:"
@@ -291,7 +291,7 @@ export default function DisputeDetail(props) {
         <Card elevation={1} padding={16} margin={8}>
           <TextareaField
             marginRight="16px"
-            inputHeight="120px"
+            inputHeight={120}
             value={proofForm.description}
             onInput={e => setProofForm({ ...proofForm, description: e.target.value })}
             label="Message:"

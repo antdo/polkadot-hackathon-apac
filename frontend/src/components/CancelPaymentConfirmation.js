@@ -3,11 +3,8 @@ import {
   Pane,
   Button,
   toaster,
-  Heading,
   Text,
 } from 'evergreen-ui';
-
-import ImagesUploader from './ImagesUploader';
 
 import { getFromAcct } from '../utils/tx';
 
