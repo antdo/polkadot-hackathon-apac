@@ -152,5 +152,6 @@ fn testnet_genesis(
 		},
 		transaction_payment: Default::default(),
 		p_2p_payment: P2pPaymentConfig { resolvers: vec![] },
+		scheduler: Default::default(),
 	}
 }
