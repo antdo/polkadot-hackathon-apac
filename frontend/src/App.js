@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import AccountSelector from './components/AccountSelector';
 import Loader from './components/Loader';
 import ErrorMessage from './components/ErrorMessage';
+import NoAccounts from './pages/NoAccounts';
 
 import { useSubstrate } from './substrate-lib';
 
@@ -19,11 +20,6 @@ export default function App() {
   const [accountAddress, setAccountAddress] = useState(null);
   const { apiState, keyring, keyringState, apiError } = useSubstrate();
 
-  const accountPair =
-    accountAddress &&
-    keyringState === 'READY' &&
-    keyring.getPair(accountAddress);
-
   if (apiState === 'ERROR') {
     return <ErrorMessage message={apiError} />;
   }
@@ -31,6 +27,17 @@ export default function App() {
   if (keyringState !== 'READY' || apiState !== 'READY') {
     return <Loader message="Connecting to the chain..." />;
   }
+
+  const accounts = keyring.getPairs();
+
+  if (accounts.length === 0) {
+    return <NoAccounts></NoAccounts>
+  }
+
+  const accountPair =
+  accountAddress &&
+  keyringState === 'READY' &&
+  keyring.getPair(accountAddress);
 
   const matchedRoute = getMatchedRoute(location.pathname) || {};
 
