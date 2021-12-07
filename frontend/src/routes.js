@@ -4,8 +4,9 @@ import Payments from './pages/Payments';
 import ProcessPayment from './pages/ProcessPayment';
 import Disputes from './pages/Disputes';
 import Resolvers from './pages/Resolvers';
+import Faucet from './pages/Faucet';
 
-import { DashboardIcon, HomeIcon, PeopleIcon, ShieldIcon, HistoryIcon } from 'evergreen-ui';
+import { DashboardIcon, HomeIcon, PeopleIcon, ShieldIcon, HistoryIcon, ChangesIcon } from 'evergreen-ui';
 
 export default [
   {
@@ -45,6 +46,13 @@ export default [
     icon: PeopleIcon,
     exact: true,
     component: Resolvers,
+  },
+  {
+    path: '/faucet',
+    name: 'Faucet',
+    icon: ChangesIcon,
+    exact: true,
+    component: Faucet,
   },
   {
     path: '/chain-state',

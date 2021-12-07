@@ -84,11 +84,16 @@ const connect = (state, dispatch) => {
 ///
 // Loading accounts from dev and polkadot-js extension
 
+const wait = (time) => new Promise((resolve) => {
+  setTimeout(resolve, time);
+});
+
 let loadAccts = false;
 const loadAccounts = (state, dispatch) => {
   const asyncLoadAccounts = async () => {
     dispatch({ type: 'LOAD_KEYRING' });
     try {
+      await wait(3000);
       await web3Enable(config.APP_NAME);
       let allAccounts = await web3Accounts();
       allAccounts = allAccounts.map(({ address, meta }) =>

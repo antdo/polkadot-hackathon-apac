@@ -5,7 +5,7 @@ import {
   Button,
   TextareaField,
   TextInputField,
-  SelectMenu,
+  TextInput,
   toaster,
 } from 'evergreen-ui';
 
@@ -102,7 +102,7 @@ export default function PaymentForm(props) {
             <TextInputField
               flex={1}
               value={paymentForm.amount}
-              onInput={e => updatePaymentForm('amount', e.target.value)}
+              onChange={e => updatePaymentForm('amount', e.target.value)}
               label="Payment amount:"
               placeholder="Amount of currency"
               required
@@ -116,18 +116,7 @@ export default function PaymentForm(props) {
               width="80px"
             >
               <Label marginBottom="8px">Currency:</Label>
-              <SelectMenu
-                title="Select name"
-                options={suportedCurrencies}
-                selected={paymentForm.currency}
-                hasFilter={false}
-                hasTitle={false}
-                onSelect={item =>
-                  setPaymentForm({ ...paymentForm, currency: item })
-                }
-              >
-                <Button>{paymentForm.currency.label}</Button>
-              </SelectMenu>
+              <TextInput width='100%' value="Libra" disabled readOnly></TextInput>
             </Pane>
           </Pane>
         </Pane>
@@ -139,16 +128,7 @@ export default function PaymentForm(props) {
         </Pane>
       </Pane>
 
-      <TextInputField
-        label="Payer address"
-        value={paymentForm.payer}
-        onInput={e => updatePaymentForm('payer', e.target.value)}
-        hint="You can specific the address of payer. If not, please leave it empty."
-        placeholder="Payer address"
-      />
-
       <TextareaField
-        marginRight="16px"
         inputHeight="120px"
         value={paymentForm.description}
         onInput={e => updatePaymentForm('description', e.target.value)}
