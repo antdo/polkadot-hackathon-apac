@@ -10,17 +10,15 @@ import { getFromAcct } from '../utils/tx';
 
 import { useSubstrate } from '../substrate-lib';
 
-export default function PaymentForm(props) {
-  const { accountPair, payment, onFormClosed } = props;
+export default function CancelPaymentConfirmation(props) {
+  const { accountPair, payment, onClosed } = props;
 
   const [isCancelling, setIsCancelling] = useState(false);
 
   const { api } = useSubstrate();
 
   const discardForm = () => {
-    if (onFormClosed) {
-      onFormClosed();
-    }
+    onClosed && onClosed();
   };
 
   const cancelPayment = async () => {
@@ -40,6 +38,7 @@ export default function PaymentForm(props) {
               `😉 Transaction finalized. Block hash: ${status.asFinalized.toString()}`
             );
             setIsCancelling(false);
+            onClosed && onClosed();
           } else {
             toaster.notify(`Current transaction status: ${status.type}`);
           }

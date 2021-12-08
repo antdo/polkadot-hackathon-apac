@@ -17,8 +17,8 @@ export default [
     exact: true,
   },
   {
-    path: '/pay-history',
-    name: 'Pay History',
+    path: '/order-history',
+    name: 'Order History',
     icon: HistoryIcon,
     component: PayHistory,
     exact: true,
