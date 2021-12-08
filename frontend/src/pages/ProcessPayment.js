@@ -170,7 +170,6 @@ export default function ProcessPayment(props) {
             setIsDisputeFormShowed(false);
           } else {
             toaster.notify(`Current transaction status: ${status.type}`);
-            toaster.notify(`Current transaction status: ${status.toString()}`);
           }
         })
         .catch(err => {

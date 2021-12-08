@@ -72,6 +72,7 @@ export default function PaymentsTable(props) {
                   <Tooltip content="Cancel this payment">
                     <IconButton
                       size="small"
+                      disabled={payment.status !== 'Completed' || payment.status !== 'Cancelled'}
                       onClick={() => setCancellingPayment(payment)}
                       marginRight={8}
                       icon={<SmallCrossIcon size={12} />}
@@ -113,7 +114,7 @@ export default function PaymentsTable(props) {
             <CancelPaymentConfirmation
               accountPair={accountPair}
               payment={cancellingPayment}
-              onFormClosed={() => setCancellingPayment(null)}
+              onClosed={() => setCancellingPayment(null)}
             ></CancelPaymentConfirmation>
           )}
         </Pane>

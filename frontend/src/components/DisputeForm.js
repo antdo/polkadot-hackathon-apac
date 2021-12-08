@@ -59,9 +59,9 @@ export default function PaymentForm(props) {
               `Dispute the payment successfully. Block hash: ${status.asFinalized.toString()}`
             );
             setIsSubmitting(false);
+            onFormClosed && onFormClosed();
           } else {
             toaster.notify(`Current transaction status: ${status.type}`);
-            toaster.notify(`Current transaction status: ${status.toString()}`);
           }
         })
         .catch(err => {
