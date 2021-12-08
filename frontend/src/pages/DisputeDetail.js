@@ -324,7 +324,7 @@ export default function DisputeDetail(props) {
           !!dispute && (
           <Pane role="group">
             <Label>
-              Please select who is the winner of the dispute?
+              Select the person who wins the dispute
             </Label>
             <Pane marginTop={8}>
               <Pane display='flex' alignItems='center'>
