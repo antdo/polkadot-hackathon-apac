@@ -1,9 +1,10 @@
 import React from 'react';
 import { Pane, Text, Heading } from 'evergreen-ui';
 import { Link, useLocation } from 'react-router-dom';
+import Balance from './Balance';
 
 export default function Sidebar(props) {
-  const { items } = props;
+  const { items, accountPair } = props;
   const location = useLocation();
 
   return (
@@ -11,7 +12,6 @@ export default function Sidebar(props) {
       <Heading paddingX="24px" paddingY="16px" is="h3">
         @Scale
       </Heading>
-
       <Pane paddingTop="32px">
         {items.map(item =>
           !item.sidebarExcluded ? (
@@ -44,6 +44,9 @@ export default function Sidebar(props) {
             ''
           )
         )}
+      </Pane>
+      <Pane marginY={32}>
+        <Balance accountPair={accountPair}></Balance>
       </Pane>
     </Pane>
   );
