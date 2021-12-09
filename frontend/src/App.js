@@ -52,7 +52,7 @@ export default function App() {
           padding="16px"
           borderRight="solid 1px #E6E8F0"
         >
-          <Sidebar items={routes} />
+          <Sidebar accountPair={accountPair} items={routes} />
         </Pane>
       )}
 
