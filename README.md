@@ -1,6 +1,33 @@
 # Project Libra
 Payment network for web 3
 
+## Live application
+
+The live running web application endpoint: https://app.libra.atscale.xyz
+
+The wss enpoint to connect polkadot apps: wss://rpc.libra.atscale.xyz
+
+### Create a testnet account
+
+- To create a testnet account, please go to https://polkadot.js.org/extension/ and install PolkadotJs extension
+
+- Go to faucet page at https://app.libra.atscale.xyz/faucet to get the Libra tokens 
+
+### How to become resolver
+
+- Go to https://app.libra.atscale.xyz/resolvers
+- Click at apply to `Apply to be resolver`
+- Input your application and submit
+- Resolver require to stake 100 0000 Libra and delegate 100 0000 Libra from community to become an active resolver
+
+### Complete your first payment
+- Go to https://app.libra.atscale.xyz/
+- Click at `Create payment`
+- Copy you payment URL and send to your buyer
+- Ask you buyer to deposit the libra tokens
+- Once you delivered your order, ask your buyer to release the tokens to you
+- If there any conflicts, please dispute the payment with your evidence
+- An random resolver will be assigned to resolve your dispute
 ## Libra node
 
 ### Setup and build
